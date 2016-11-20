@@ -1,3 +1,5 @@
+
+
 all: libp2sw.a
 
 CPU             = msp430g2553
