@@ -25,49 +25,79 @@ AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
 AbRectOutline fieldOutline = {	/* playing field */
   abRectOutlineGetBounds, abRectOutlineCheck,   
-  {screenWidth/2 - 10, screenHeight/2 - 10}
+  {screenWidth/2 - 2, screenHeight/2 - 8}
+};
+Layer pacDotsLayer2 = {		/**< Layer with an orange circle */
+  (AbShape *)&circle2,
+  {((screenWidth/3)*2), ((screenHeight/4)*3)}, /**< bit below & right of center */
+  {0,0}, {0,0},				    /* last & next pos */
+  COLOR_ORANGE,
+  0,
+};
+Layer pacDotsLayer1 = {		/**< Layer with an orange circle */
+  (AbShape *)&circle2,
+  {(screenWidth/3), (screenHeight/4)}, /**< bit below & right of center */
+  {0,0}, {0,0},				    /* last & next pos */
+  COLOR_ORANGE,
+  &pacDotsLayer2,
+};
+Layer pacDotsLayer0 = {		/**< Layer with an orange circle */
+  (AbShape *)&circle2,
+  {55, 65}, /**< bit below & right of center */
+  {0,0}, {0,0},				    /* last & next pos */
+  COLOR_ORANGE,
+  &pacDotsLayer1,
 };
 
-Layer layer4 = {
+/*Layer layer4 = {
   (AbShape *)&rightArrow,
-  {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
+  {(screenWidth/2)+10, (screenHeight/2)+5}, // bit below & right of center 
+  {0,0}, {0,0},				    // last & next pos 
   COLOR_PINK,
-  0
-};  
+  &pacDotsLayer0
+  };*/
 
-Layer layer3 = {		/**< Layer with an orange circle */
+/*Layer layer3 = {		//< Layer with an orange circle 
   (AbShape *)&circle8,
-  {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
+  {(screenWidth/2)+10, (screenHeight/2)+5}, //< bit below & right of center 
+  {0,0}, {0,0},				    // last & next pos 
   COLOR_VIOLET,
-  &layer4,
-};
+  0, //Used to be &layer4
+};*/
 
 
 Layer fieldLayer = {		/* playing field as a layer */
   (AbShape *) &fieldOutline,
-  {screenWidth/2, screenHeight/2},/**< center */
+  {screenWidth/2, (screenHeight/2)+4},/**< center */
   {0,0}, {0,0},				    /* last & next pos */
-  COLOR_BLACK,
-  &layer3 //previously &layer3
+  COLOR_BLUE,
+  &pacDotsLayer0 //previously &layer3
 };
 
-Layer layer1 = {		/**< Layer with a red square */
+/*Layer layer1 = {		// Layer with a red square 
   (AbShape *)&rect10,
-  {screenWidth/2, screenHeight/2}, /**< center */
-  {0,0}, {0,0},				    /* last & next pos */
+  {screenWidth/2, screenHeight/2}, //< center 
+  {0,0}, {0,0},				   // last & next pos 
   COLOR_RED,
   &fieldLayer,
+  };*/
+
+Layer pacmanLayer0 = {		/**< Layer with an orange circle */
+  (AbShape *)&circle7,
+  {(screenWidth/2)+45, (screenHeight/2)+25}, /**< bit below & right of center */
+  {0,0}, {0,0},				    /* last & next pos */
+  COLOR_ORANGE,
+  &fieldLayer, //previously &layer1,
 };
 
 Layer layer0 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle14,
-  {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
+  (AbShape *)&circle2,
+  {(screenWidth/2)+45, (screenHeight/2)+25}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
-  &layer1, //previously &layer1,
+  &pacmanLayer0, 
 };
+
 
 /** Moving Layer
  *  Linked list of layer references
@@ -80,11 +110,13 @@ typedef struct MovLayer_s {
 } MovLayer;
 
 /* initial value of {0,0} will be overwritten */
-MovLayer ml3 = { &layer3, {1,1}, 0 }; /**< not all layers move */
-MovLayer ml1 = { &layer1, {1,2}, &ml3 }; 
-MovLayer ml0 = { &layer0, {2,1}, &ml1 }; 
 
+MovLayer ml0 = { &pacmanLayer0, {1,1}, 0 }; // Arrow
 
+/**< not all layers move */ //USED TO BE &layer3 //CHANGED NAME FROM m13 to m10
+
+//MovLayer ml1 = { &layer1, {1,2}, &ml3 }; 
+//MovLayer ml0 = { &layer0, {2,1}, &ml1 }; 
 
 
 /**movLayers move future position of layers, and layers (probes the layers?)*/
@@ -156,7 +188,7 @@ void mlAdvance(MovLayer *ml, Region *fence)
 }
 
 
-u_int bgColor = COLOR_BLUE;     /**< The background color */
+u_int bgColor = COLOR_BLACK;     /**< The background color */
 int redrawScreen = 1;           /**< Boolean for whether screen needs to be redrawn */
 
 Region fieldFence;		/**< fence around playing field  */
@@ -178,7 +210,6 @@ void main()
 
   shapeInit();
 
-  p2sw_init( (BIT3 | BIT2 | BIT1 | BIT0) );
 
 
   //p2sw_init(1);
@@ -188,10 +219,12 @@ void main()
   
   layerInit(&layer0);
   layerDraw(&layer0);
-
+ 
 
   layerGetBounds(&fieldLayer, &fieldFence);
+  p2sw_init( (BIT3 | BIT2 | BIT1 | BIT0) );
 
+  drawString5x7(10,3, "hello", COLOR_GREEN, COLOR_RED);
 
   enableWDTInterrupts();      /**< enable periodic interrupt */
 
@@ -238,23 +271,25 @@ __interrupt(PORT2_VECTOR) Port_2(){
   abShapeGetBounds(m1->layer->abShape, &newPos, &shapeBoundary);
    
   if(P2IFG & BIT0 == BIT0){
-    velocityX = -m1->velocity.axes[0];
-    velocityY = -m1->velocity.axes[1];     
+    /*    velocityX = m1->velocity.axes[0]+1;
+	  velocityY = m1->velocity.axes[1]+1;     */
+    velocityX = 0; /**Moves pacman velocity up*/
+    velocityY = -1;
   }
   else if(P2IFG & BIT1 == BIT1){
-    velocityX = -m1->velocity.axes[0];
-    velocityY = -m1->velocity.axes[1];
+    velocityX = 0; /**Moves pacman velocity down*/
+    velocityY = 1;
 
   }
   else if(P2IFG & BIT2 == BIT2){
-    velocityX = m1->velocity.axes[0]+1;
-    velocityY = m1->velocity.axes[1]+1;
+    velocityX = -1; /**Moves pacman velocity to left*/
+    velocityY =  0;
 
   }
   else if(P2IFG & BIT3 == BIT3){
-    velocityX = m1->velocity.axes[0]-1;
-    velocityY = m1->velocity.axes[1]-1;
-
+    velocityX = 1; /**Moves pacman velocity to right*/
+    velocityY = 0;
+    
   }
   else{ /**Unkown button press*/
     P2IFG = 0;
