@@ -137,34 +137,74 @@ void objectCollisions(){
   centerPos.axes[1] /= 2;
 
   
-  Region pacDot;
+  Region pacDotRegion;
+
+  int pacDot = 0;
+  Layer* pacDotLayer;
+  int newX;
+  int newY;
+
+
+  for(pacDot = 0; pacDot < 10; pacDot++){
+    switch(pacDot){
+    case 0: pacDotLayer = &pacDotsLayer0; newX = 75; newY = 3; break;
+    case 1: pacDotLayer = &pacDotsLayer1; newX = 85; newY = 3; break;
+    case 2: pacDotLayer = &pacDotsLayer2; newX = 95; newY = 3; break;
+    case 3: pacDotLayer = &pacDotsLayer3; newX = 105; newY = 3; break;
+    case 4: pacDotLayer = &pacDotsLayer4; newX = 115; newY = 3; break;
+    case 5: pacDotLayer = &pacDotsLayer5; newX = 75; newY = 10; break;
+    case 6: pacDotLayer = &pacDotsLayer6; newX = 85; newY = 10; break;
+    case 7: pacDotLayer = &pacDotsLayer7; newX = 95; newY = 10; break;
+    case 8: pacDotLayer = &pacDotsLayer8; newX = 105; newY = 10; break;
+    case 9: pacDotLayer = &pacDotsLayer9; newX = 115; newY = 10; break;
+    default: break;
+      
+    }
+    
+    abShapeGetBounds(pacDotLayer->abShape, &(pacDotLayer->pos), &pacDotRegion);
+    
+    if(regionsIntersectOptimized(&centerPos, &pacDotRegion)){
+      pacDotLayer->posNext.axes[0] = newX;
+      pacDotLayer->posNext.axes[1] = newY;
+      pacDotLayer->pos.axes[0] = newX;
+      pacDotLayer->pos.axes[1] = newY;
+      
+      pacDotsGotten++;
+    }
+  }
+  
+
+
+  /*
   abShapeGetBounds((&pacDotsLayer0)->abShape, &((&pacDotsLayer0)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*(&pacDotsLayer0)->posNext.axes[0] = 85;
+    (&pacDotsLayer0)->posNext.axes[0] = 75;
     (&pacDotsLayer0)->posNext.axes[1] = 3;
-    (&pacDotsLayer0)->pos.axes[0] = 85;
-    (&pacDotsLayer0)->pos.axes[1] = 3;*/
+    (&pacDotsLayer0)->pos.axes[0] = 75;
+    (&pacDotsLayer0)->pos.axes[1] = 3;
     
-        (&ml1)->layer->posNext.axes[0] = 85;  //pacDot0
-    (&ml1)->layer->posNext.axes[1] = 3;
-    (&ml1)->layer->pos.axes[0] = 85;  //pacDot0
-    (&ml1)->layer->pos.axes[1] = 3;
+    //    (&ml1)->layer->posNext.axes[0] = 75;  //pacDot0
+    //(&ml1)->layer->posNext.axes[1] = 3;
+    //(&ml1)->layer->pos.axes[0] = 75;  //pacDot0
+    //(&ml1)->layer->pos.axes[1] = 3;
     pacDotsGotten++;
   }
 
+
+  
   abShapeGetBounds((&pacDotsLayer1)->abShape, &((&pacDotsLayer1)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer1)->posNext.axes[0] = 95;
+    (&pacDotsLayer1)->posNext.axes[0] = 85;
     (&pacDotsLayer1)->posNext.axes[1] = 3;
-    (&pacDotsLayer1)->pos.axes[0] = 95;
-    (&pacDotsLayer1)->pos.axes[1] = 3;*/
+    (&pacDotsLayer1)->pos.axes[0] = 85;
+    (&pacDotsLayer1)->pos.axes[1] = 3;
 
-    (&ml2)->layer->posNext.axes[0] = 95;  //pacDot1
-    (&ml2)->layer->posNext.axes[1] = 3;
-    (&ml2)->layer->pos.axes[0] = 95;  //pacDot1
-    (&ml2)->layer->pos.axes[1] = 3;
+    // (&ml2)->layer->posNext.axes[0] = 85;  //pacDot1
+    //(&ml2)->layer->posNext.axes[1] = 3;
+    //(&ml2)->layer->pos.axes[0] = 85;  //pacDot1
+    //(&ml2)->layer->pos.axes[1] = 3;
     
     pacDotsGotten++;
   }
@@ -172,14 +212,14 @@ void objectCollisions(){
   abShapeGetBounds((&pacDotsLayer2)->abShape, &((&pacDotsLayer2)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer2)->posNext.axes[0] = 105;
+    (&pacDotsLayer2)->posNext.axes[0] = 95;
     (&pacDotsLayer2)->posNext.axes[1] = 3;
-    (&pacDotsLayer2)->pos.axes[0] = 105;
-    (&pacDotsLayer2)->pos.axes[1] = 3;*/
+    (&pacDotsLayer2)->pos.axes[0] = 95;
+    (&pacDotsLayer2)->pos.axes[1] = 3;
     
-    (&ml3)->layer->posNext.axes[0] = 105;  //pacDot2
+        (&ml3)->layer->posNext.axes[0] = 95;  //pacDot2
     (&ml3)->layer->posNext.axes[1] = 3;
-    (&ml3)->layer->pos.axes[0] = 105;  //pacDot2
+    (&ml3)->layer->pos.axes[0] = 95;  //pacDot2
     (&ml3)->layer->pos.axes[1] = 3;
     
     pacDotsGotten++;
@@ -189,15 +229,15 @@ void objectCollisions(){
   abShapeGetBounds((&pacDotsLayer3)->abShape, &((&pacDotsLayer3)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[0] = 105;
     (&pacDotsLayer3)->posNext.axes[1] = 3;
-    (&pacDotsLayer3)->pos.axes[0] = 115;
-    (&pacDotsLayer3)->pos.axes[1] = 3;*/
+    (&pacDotsLayer3)->pos.axes[0] = 105;
+    (&pacDotsLayer3)->pos.axes[1] = 3;
 
     
-    (&ml4)->layer->posNext.axes[0] = 75;  //pacDot3
+       (&ml4)->layer->posNext.axes[0] = 105;  //pacDot3
     (&ml4)->layer->posNext.axes[1] = 3;
-    (&ml4)->layer->pos.axes[0] = 75;  //pacDot3
+    (&ml4)->layer->pos.axes[0] = 105;  //pacDot3
     (&ml4)->layer->pos.axes[1] = 3;
     
     pacDotsGotten++;
@@ -207,10 +247,10 @@ void objectCollisions(){
   abShapeGetBounds((&pacDotsLayer4)->abShape, &((&pacDotsLayer4)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer4)->posNext.axes[0] = 115;
+    (&pacDotsLayer4)->posNext.axes[1] = 3;
+    (&pacDotsLayer4)->pos.axes[0] = 115;
+    (&pacDotsLayer4)->pos.axes[1] = 3;
 
     
     (&ml5)->layer->posNext.axes[0] = 115;  //pacDot4
@@ -223,10 +263,10 @@ void objectCollisions(){
   abShapeGetBounds((&pacDotsLayer5)->abShape, &((&pacDotsLayer5)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer5)->posNext.axes[0] = 115;
+    (&pacDotsLayer5)->posNext.axes[1] = 10;
+    (&pacDotsLayer5)->pos.axes[0] = 115;
+    (&pacDotsLayer5)->pos.axes[1] = 10;
 
     
     (&ml6)->layer->posNext.axes[0] = 115;  //pacDot5
@@ -239,10 +279,10 @@ void objectCollisions(){
   abShapeGetBounds((&pacDotsLayer6)->abShape, &((&pacDotsLayer6)->pos), &pacDot);
   
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer6)->posNext.axes[0] = 105;
+    (&pacDotsLayer6)->posNext.axes[1] = 10;
+    (&pacDotsLayer6)->pos.axes[0] = 105;
+    (&pacDotsLayer6)->pos.axes[1] = 10;
 
     
     (&ml7)->layer->posNext.axes[0] = 105;  //pacDot6
@@ -256,10 +296,10 @@ void objectCollisions(){
   
   abShapeGetBounds((&pacDotsLayer7)->abShape, &((&pacDotsLayer7)->pos), &pacDot);
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer7)->posNext.axes[0] = 95;
+    (&pacDotsLayer7)->posNext.axes[1] = 10;
+    (&pacDotsLayer7)->pos.axes[0] = 95;
+    (&pacDotsLayer7)->pos.axes[1] = 10;
 
     
     (&ml8)->layer->posNext.axes[0] = 95;  //pacDot7
@@ -272,13 +312,13 @@ void objectCollisions(){
   
   abShapeGetBounds((&pacDotsLayer8)->abShape, &((&pacDotsLayer8)->pos), &pacDot);
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer8)->posNext.axes[0] = 85;
+    (&pacDotsLayer8)->posNext.axes[1] = 10;
+    (&pacDotsLayer8)->pos.axes[0] = 85;
+    (&pacDotsLayer8)->pos.axes[1] = 10;
 
     
-    (&ml9)->layer->posNext.axes[0] = 85;  //pacDot8
+        (&ml9)->layer->posNext.axes[0] = 85;  //pacDot8
     (&ml9)->layer->posNext.axes[1] = 10;
     (&ml9)->layer->pos.axes[0] = 85;  //pacDot8
     (&ml9)->layer->pos.axes[1] = 10;
@@ -288,10 +328,10 @@ void objectCollisions(){
 
   abShapeGetBounds((&pacDotsLayer9)->abShape, &((&pacDotsLayer9)->pos), &pacDot);
   if(regionsIntersectOptimized(&centerPos, &pacDot)){
-    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
-    (&pacDotsLayer4)->posNext.axes[1] = 5;
-    (&pacDotsLayer4)->pos.axes[0] = 120;
-    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+    (&pacDotsLayer9)->posNext.axes[0] = 75;
+    (&pacDotsLayer9)->posNext.axes[1] = 10;
+    (&pacDotsLayer9)->pos.axes[0] = 75;
+    (&pacDotsLayer9)->pos.axes[1] = 10;
 
     
     (&ml10)->layer->posNext.axes[0] = 75;  //pacDot8
@@ -300,7 +340,7 @@ void objectCollisions(){
     (&ml10)->layer->pos.axes[1] = 10;
     
     pacDotsGotten++;
-  }
+  }*/
 
   
   /*  if(regionsIntersect(&pacDot0, &pacman)){
