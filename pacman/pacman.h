@@ -1,13 +1,19 @@
 
-AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
-AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
+//AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
+//AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
-static int pacDotsGotten = 0;
+static unsigned short pacDotsGotten = 0;
+
 
 AbRectOutline fieldOutline = {	/* playing field */
   abRectOutlineGetBounds, abRectOutlineCheck,   
   {screenWidth/2 - 5, screenHeight/2 - 10}
 };
+
+/*AbRectOutline obstacleOutline = {	// playing field 
+  abRectOutlineGetBounds, abRectOutlineCheck,   
+  {20, 5} //obstacle (width), (height)
+};*/
 
 
 Layer pacDotsLayer9 = {		/**< Layer with an orange circle */
@@ -89,6 +95,22 @@ Layer pacDotsLayer0 = {		/**< Layer with an orange circle */
   COLOR_ORANGE,
   &pacDotsLayer1,
 };
+
+/*Layer obstacleLayer1 = {		// playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {((screenWidth/4)*3)-1, ((screenHeight/4)*3)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &pacDotsLayer0 
+};
+
+Layer obstacleLayer0 = {		 //playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {screenWidth/4-1, (screenHeight/4)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &obstacleLayer1 //previously &layer3
+};*/
 
 Layer fieldLayer = {		/* playing field as a layer */
   (AbShape *) &fieldOutline,
