@@ -16,6 +16,8 @@ all:shapemotion.elf
 shapemotion.elf: ${COMMON_OBJECTS} shapemotion.o wdt_handler.o
 	${CC} -mmcu=${CPU}   -o $@ $^ -L../lib -lTimer -lLcd -lShape -lCircle -lp2sw
 
+shapemotion.o: pacman.h
+
 load: shapemotion.elf
 	mspdebug rf2500 "prog $^"
 

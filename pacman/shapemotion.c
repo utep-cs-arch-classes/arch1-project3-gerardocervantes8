@@ -15,90 +15,14 @@
 #include <p2switches.h>
 #include <shape.h>
 #include <abCircle.h>
+#include "pacman.h"
 
 #define GREEN_LED BIT6
 #define RED_LED BIT0
 
 
-AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
-AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
-static int pacDotsGotten = 0;
-
-AbRectOutline fieldOutline = {	/* playing field */
-  abRectOutlineGetBounds, abRectOutlineCheck,   
-  {screenWidth/2 - 4, screenHeight/2 - 8}
-};
-
-Layer pacDotsLayer3 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle2,
-  {(screenWidth/2)+45, (screenHeight/2)+25}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_ORANGE,
-  0,
-};
-
-Layer pacDotsLayer2 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle2,
-  {((screenWidth/3)*2), ((screenHeight/4)*3)}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_ORANGE,
-  &pacDotsLayer3,
-};
-
-Layer pacDotsLayer1 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle2,
-  {(screenWidth/3), (screenHeight/4)}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_ORANGE,
-  &pacDotsLayer2,
-};
-Layer pacDotsLayer0 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle2,
-  {55, 65}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_ORANGE,
-  &pacDotsLayer1,
-};
-
-Layer fieldLayer = {		/* playing field as a layer */
-  (AbShape *) &fieldOutline,
-  {screenWidth/2-1, (screenHeight/2)+4},/**< center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_BLUE,
-  &pacDotsLayer0 //previously &layer3
-};
-
-Layer pacmanLayer0 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle7,
-  {(screenWidth/2)+15, (screenHeight/2)+5}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_ORANGE,
-  &fieldLayer, //previously &layer1,
-};
-
-
-/** Moving Layer
- *  Linked list of layer references
- *  Velocity represents one iteration of change (direction & magnitude)
- */
-typedef struct MovLayer_s {
-  Layer *layer;
-  Vec2 velocity;
-  struct MovLayer_s *next;
-} MovLayer;
-
-/* initial value of {0,0} will be overwritten */
-MovLayer ml1 = { &pacDotsLayer0, {0,0}, 0}; //moving layyer for pacman dot
-MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Pacman layer movement
-
-
-/**< not all layers move */ //USED TO BE &layer3 //CHANGED NAME FROM m13 to m10
-
-
-/**movLayers move future position of layers, and layers (probes the layers?)
-
-Updates next pos to be new pos, and redraws the layer*/
+/*Updates next pos to be new pos, and redraws the layer*/
 movLayerDraw(MovLayer *movLayers, Layer *layers)
 {
   int row, col;
@@ -181,36 +105,263 @@ Region fieldFence;		/**< fence around playing field  */
 
 Vec2 centerPos = {
   {0,0}
-
 };
 
 
 
 void objectCollisions(){
-  Region pacDot0;
-  abShapeGetBounds((&pacDotsLayer0)->abShape, &((&pacDotsLayer0)->pos), &pacDot0);
-  Region pacDot1;
+  /*Region pacDot1;
   abShapeGetBounds((&pacDotsLayer1)->abShape, &((&pacDotsLayer1)->pos), &pacDot1);
   Region pacDot2;
   abShapeGetBounds((&pacDotsLayer2)->abShape, &((&pacDotsLayer2)->pos), &pacDot2);
   Region pacDot3;
   abShapeGetBounds((&pacDotsLayer3)->abShape, &((&pacDotsLayer3)->pos), &pacDot3);
+  Region pacDot4;
+  abShapeGetBounds((&pacDotsLayer4)->abShape, &((&pacDotsLayer4)->pos), &pacDot4);*/
+  /*Region pacDot5;
+  abShapeGetBounds((&pacDotsLayer5)->abShape, &((&pacDotsLayer5)->pos), &pacDot5);
+  Region pacDot6;
+  abShapeGetBounds((&pacDotsLayer6)->abShape, &((&pacDotsLayer6)->pos), &pacDot6);
+  Region pacDot7;
+  abShapeGetBounds((&pacDotsLayer7)->abShape, &((&pacDotsLayer7)->pos), &pacDot7);
+  Region pacDot8;
+  abShapeGetBounds((&pacDotsLayer8)->abShape, &((&pacDotsLayer8)->pos), &pacDot8);
+  Region pacDot9;
+  abShapeGetBounds((&pacDotsLayer9)->abShape, &((&pacDotsLayer9)->pos), &pacDot9);*/
+  
   Region pacman;
   abShapeGetBounds((&pacmanLayer0)->abShape, &((&pacmanLayer0)->pos), &pacman);
+ 
+  vec2Add((&centerPos), (&(pacman.topLeft)), (&(pacman.botRight)) );
+  centerPos.axes[0] /= 2;
+  centerPos.axes[1] /= 2;
+
   
-  if(regionsIntersect(&pacDot0, &pacman)){
+  Region pacDot;
+  abShapeGetBounds((&pacDotsLayer0)->abShape, &((&pacDotsLayer0)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*(&pacDotsLayer0)->posNext.axes[0] = 85;
+    (&pacDotsLayer0)->posNext.axes[1] = 3;
+    (&pacDotsLayer0)->pos.axes[0] = 85;
+    (&pacDotsLayer0)->pos.axes[1] = 3;*/
+    
+        (&ml1)->layer->posNext.axes[0] = 85;  //pacDot0
+    (&ml1)->layer->posNext.axes[1] = 3;
+    (&ml1)->layer->pos.axes[0] = 85;  //pacDot0
+    (&ml1)->layer->pos.axes[1] = 3;
+    pacDotsGotten++;
+  }
+
+  abShapeGetBounds((&pacDotsLayer1)->abShape, &((&pacDotsLayer1)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer1)->posNext.axes[0] = 95;
+    (&pacDotsLayer1)->posNext.axes[1] = 3;
+    (&pacDotsLayer1)->pos.axes[0] = 95;
+    (&pacDotsLayer1)->pos.axes[1] = 3;*/
+
+    (&ml2)->layer->posNext.axes[0] = 95;  //pacDot1
+    (&ml2)->layer->posNext.axes[1] = 3;
+    (&ml2)->layer->pos.axes[0] = 95;  //pacDot1
+    (&ml2)->layer->pos.axes[1] = 3;
+    
+    pacDotsGotten++;
+  }
+
+  abShapeGetBounds((&pacDotsLayer2)->abShape, &((&pacDotsLayer2)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer2)->posNext.axes[0] = 105;
+    (&pacDotsLayer2)->posNext.axes[1] = 3;
+    (&pacDotsLayer2)->pos.axes[0] = 105;
+    (&pacDotsLayer2)->pos.axes[1] = 3;*/
+    
+    (&ml3)->layer->posNext.axes[0] = 105;  //pacDot2
+    (&ml3)->layer->posNext.axes[1] = 3;
+    (&ml3)->layer->pos.axes[0] = 105;  //pacDot2
+    (&ml3)->layer->pos.axes[1] = 3;
+    
+    pacDotsGotten++;
+  }
+
+
+  abShapeGetBounds((&pacDotsLayer3)->abShape, &((&pacDotsLayer3)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    (&pacDotsLayer3)->pos.axes[0] = 115;
+    (&pacDotsLayer3)->pos.axes[1] = 3;*/
+
+    
+    (&ml4)->layer->posNext.axes[0] = 75;  //pacDot3
+    (&ml4)->layer->posNext.axes[1] = 3;
+    (&ml4)->layer->pos.axes[0] = 75;  //pacDot3
+    (&ml4)->layer->pos.axes[1] = 3;
+    
+    pacDotsGotten++;
+  }
+
+
+  abShapeGetBounds((&pacDotsLayer4)->abShape, &((&pacDotsLayer4)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml5)->layer->posNext.axes[0] = 115;  //pacDot4
+    (&ml5)->layer->posNext.axes[1] = 3;
+    (&ml5)->layer->pos.axes[0] = 115;  //pacDot4
+    (&ml5)->layer->pos.axes[1] = 3;
+    
+    pacDotsGotten++;
+  }
+  abShapeGetBounds((&pacDotsLayer5)->abShape, &((&pacDotsLayer5)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml6)->layer->posNext.axes[0] = 115;  //pacDot5
+    (&ml6)->layer->posNext.axes[1] = 10;
+    (&ml6)->layer->pos.axes[0] = 115;  //pacDot5
+    (&ml6)->layer->pos.axes[1] = 10;
+    
+    pacDotsGotten++;
+  }
+  abShapeGetBounds((&pacDotsLayer6)->abShape, &((&pacDotsLayer6)->pos), &pacDot);
+  
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml7)->layer->posNext.axes[0] = 105;  //pacDot6
+    (&ml7)->layer->posNext.axes[1] = 10;
+    (&ml7)->layer->pos.axes[0] = 105;  //pacDot6
+    (&ml7)->layer->pos.axes[1] = 10;
+    
+    pacDotsGotten++;
+  }
+
+  
+  abShapeGetBounds((&pacDotsLayer7)->abShape, &((&pacDotsLayer7)->pos), &pacDot);
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml8)->layer->posNext.axes[0] = 95;  //pacDot7
+    (&ml8)->layer->posNext.axes[1] = 10;
+    (&ml8)->layer->pos.axes[0] = 95;  //pacDot7
+    (&ml8)->layer->pos.axes[1] = 10;
+    
+    pacDotsGotten++;
+  }
+  
+  abShapeGetBounds((&pacDotsLayer8)->abShape, &((&pacDotsLayer8)->pos), &pacDot);
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml9)->layer->posNext.axes[0] = 85;  //pacDot8
+    (&ml9)->layer->posNext.axes[1] = 10;
+    (&ml9)->layer->pos.axes[0] = 85;  //pacDot8
+    (&ml9)->layer->pos.axes[1] = 10;
+    
+    pacDotsGotten++;
+  }
+
+  abShapeGetBounds((&pacDotsLayer9)->abShape, &((&pacDotsLayer9)->pos), &pacDot);
+  if(regionsIntersectOptimized(&centerPos, &pacDot)){
+    /*    (&pacDotsLayer4)->posNext.axes[0] = 120;
+    (&pacDotsLayer4)->posNext.axes[1] = 5;
+    (&pacDotsLayer4)->pos.axes[0] = 120;
+    (&pacDotsLayer4)->pos.axes[1] = 5;*/
+
+    
+    (&ml10)->layer->posNext.axes[0] = 75;  //pacDot8
+    (&ml10)->layer->posNext.axes[1] = 10;
+    (&ml10)->layer->pos.axes[0] = 75;  //pacDot8
+    (&ml10)->layer->pos.axes[1] = 10;
+    
+    pacDotsGotten++;
+  }
+
+  
+  /*  if(regionsIntersect(&pacDot0, &pacman)){
     //(&pacDotsLayer0)->posNext.axes[0] = (&pacDotsLayer0)->pos.axes[0] + 5;
     //(&pacDotsLayer0)->posNext.axes[1] = (&pacDotsLayer0)->pos.axes[1] + 5;
 
 
-    (&pacDotsLayer0)->posNext.axes[0] = 50;
-    (&pacDotsLayer0)->posNext.axes[1] = 4;
+    (&pacDotsLayer0)->posNext.axes[0] = 85;
+    (&pacDotsLayer0)->posNext.axes[1] = 3;
     pacDotsGotten++;
     
     //Vec2* breakProg;
     //vec2Add(breakProg, &centerPos, &centerPos);
   }
-  
+  else if(regionsIntersect(&pacDot1, &pacman)){
+    (&pacDotsLayer1)->posNext.axes[0] = 95;
+    (&pacDotsLayer1)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }
+  else if(regionsIntersect(&pacDot2, &pacman)){
+    (&pacDotsLayer2)->posNext.axes[0] = 105;
+    (&pacDotsLayer2)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }
+  else if(regionsIntersect(&pacDot3, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }  
+  else if(regionsIntersect(&pacDot4, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 120;
+    (&pacDotsLayer3)->posNext.axes[1] = 5;
+    pacDotsGotten++;
+    } */ 
+  /*  else if(regionsIntersect(&pacDot5, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }  
+  else if(regionsIntersect(&pacDot6, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }  
+  else if(regionsIntersect(&pacDot7, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }  
+  else if(regionsIntersect(&pacDot8, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  }  
+  else if(regionsIntersect(&pacDot9, &pacman)){
+    (&pacDotsLayer3)->posNext.axes[0] = 115;
+    (&pacDotsLayer3)->posNext.axes[1] = 3;
+    pacDotsGotten++;
+  } 
+
+  */ 
 }
 /**Finds if center of a region1 is inside region2, if so returns true*/
 int regionsIntersect(Region* reg1, Region* reg2){
@@ -225,6 +376,27 @@ int regionsIntersect(Region* reg1, Region* reg2){
   centerPos.axes[0] /= 2;
   centerPos.axes[1] /= 2;
 
+    //If X-axis is between region2
+  if (centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
+    //Vec2* breakProg;
+    //vec2Add(breakProg, &centerPos, &centerPos);
+    //If Y-axis is between region2
+    if(centerPos.axes[1] <= reg2->botRight.axes[1] && centerPos.axes[1] >= reg2->topLeft.axes[1] ){
+      return 1;
+    }
+  }
+  return 0;
+}
+/**Finds if center of a region1 is inside region2, if so returns true*/
+int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
+  
+  //Finds center of region1
+  //Vec2* centerPos = (Vec2*) malloc(sizeof(reg1->topLeft));
+  //vec2Add((&centerPos), (&(reg1->topLeft)), (&(reg1->botRight)) );
+
+  //  reg2->topLeft.axes[0] += reg2->botRight.axes[0];
+  //reg2->topLeft.axes[1] += reg2->botRight.axes[1];
+  
     //If X-axis is between region2
   if (centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
     //Vec2* breakProg;
@@ -290,7 +462,7 @@ void wdt_c_handler()
   static short count = 0;
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
-  if (count == 15) {
+  if (count == 15) { //used to be 15
     mlAdvance(&ml0, &fieldFence);
     objectCollisions();
     if (p2sw_read())
@@ -312,6 +484,7 @@ void changeVelocity(int* velocityX, int* velocityY, int direction){
   case 2: (*velocityX) = 0; (*velocityY) = 3; break; //pacman moving down
   case 3: (*velocityX) = -3; (*velocityY) = 0; break; //pacman moving right
   case 4: (*velocityX) = 3; (*velocityY) = 0; break; //pacman moving left
+  default: (*velocityX) = 5; (*velocityY) = 5; return;
   }
 }
 
@@ -319,15 +492,15 @@ void changeVelocity(int* velocityX, int* velocityY, int direction){
 /**Changes direction pacman is moving based off of what button was pressed*/
 void updatePacmanMovement(){
   
-  MovLayer* m1 = (&ml0);
+  MovLayer* m1 = (&ml0); //ml0 is pacman's MovLayer
   Vec2 newPos;
   int velocityX;
   int velocityY;
-  Region shapeBoundary;
+  Region shapeBoundary; //delete?
   
   vec2Add(&newPos, &(m1->layer->posNext), &(m1->velocity));
   
-  abShapeGetBounds(m1->layer->abShape, &newPos, &shapeBoundary);
+  abShapeGetBounds(m1->layer->abShape, &newPos, &shapeBoundary); //delete?
   
   int direction = 0;
   switch( (P2IFG & (BIT0 | BIT1 | BIT2 | BIT3) ) ){
@@ -336,6 +509,7 @@ void updatePacmanMovement(){
   case BIT1: direction = 2; break; //Button 2 pressed (sw2)
   case BIT2: direction = 3; break; //Button 3 pressed (sw2)
   case BIT3: direction = 4; break; //Button 4 pressed (sw2)
+  default: return;
   }
 
   changeVelocity( (&velocityX), (&velocityY), direction); /**Updates what the new velocity will be based on direction*/
@@ -350,7 +524,6 @@ void updatePacmanMovement(){
 }
 
 __interrupt(PORT2_VECTOR) Port_2(){
-  //  updateVelocityUpdate();
   updatePacmanMovement();
 }
 
