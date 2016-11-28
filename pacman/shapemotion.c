@@ -16,7 +16,9 @@
 #include <shape.h>
 #include <abCircle.h>
 #include "pacman.h"
+#include "buzzer.h"
 #include "sound.h"
+
 
 #define GREEN_LED BIT6
 #define RED_LED BIT0
@@ -254,6 +256,7 @@ void objectCollisions(){
       pacDotLayer->pos.axes[1] = newY;
       
       pacDotsGotten++;
+      sound_start(2);
     }
   }
   
@@ -284,6 +287,8 @@ void main()
 
   lcd_init();
 
+  buzzer_init();
+  buzzer_stop();
   shapeInit();
   //p2sw_init(1);
   //shapeInit();
@@ -339,6 +344,7 @@ void wdt_c_handler()
     checkFencesOutside(&ml0, &obstacleFence4);
     mlAdvance(&ml0);
     objectCollisions();
+    sound_update(0);
     if (p2sw_read())
       redrawScreen = 1;
     count = 0;

@@ -13,10 +13,14 @@ AS              = msp430-elf-gcc -mmcu=${CPU} -c
 all:shapemotion.elf
 
 #additional rules for files
-shapemotion.elf: ${COMMON_OBJECTS} shapemotion.o wdt_handler.o
+shapemotion.elf: ${COMMON_OBJECTS} shapemotion.o wdt_handler.o buzzer.o sound.o
 	${CC} -mmcu=${CPU}   -o $@ $^ -L../lib -lTimer -lLcd -lShape -lCircle -lp2sw
 
 shapemotion.o: pacman.h
+
+buzzer.o: buzzer.h
+
+sound.o: sound.h
 
 load: shapemotion.elf
 	mspdebug rf2500 "prog $^"

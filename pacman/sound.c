@@ -18,7 +18,9 @@ static char isPlayingSound = 0;
 2 play losing sound song*/
 
 
-static int loseSound[5] = {400,500,600,715,795};
+//static int loseSound[5] = {400,500,600,715,795};
+
+static int loseSound[2] = {400,500};
 
 
 /**Given the winStreak, updates the sound to check if need to change the buzzer based on hte song playing
@@ -61,7 +63,7 @@ void sound_play_song(){
   buzzer_set_period(loseSound[note]);
 
   /**Length that each note will play to*/
-  if(soundCounter > 30){
+  if(soundCounter > 2){
     /**Has finished playing all notes of the sound effect*/
     if(note >= (sizeof(loseSound)-1) ){
       sound_stop();
