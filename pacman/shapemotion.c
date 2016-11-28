@@ -16,10 +16,17 @@
 #include <shape.h>
 #include <abCircle.h>
 #include "pacman.h"
+#include "sound.h"
 
 #define GREEN_LED BIT6
 #define RED_LED BIT0
 #define SWITCHES 0x0f  //Switches 1, 2, 3, and 4 in port 2
+
+
+Vec2 centerPos = {
+  {0,0}
+};
+
 
 /*Updates next pos to be new pos, and redraws the layer*/
 movLayerDraw(MovLayer *movLayers, Layer *layers)
@@ -72,7 +79,7 @@ movLayerDraw(MovLayer *movLayers, Layer *layers)
  */
 /**If pixel is over the fence then changes direction of velocity*/
 /**Calculates newPos based on the velocity */
-void mlAdvance(MovLayer *ml, Region *fence)
+/*void mlAdvance(MovLayer *ml, Region *fence)
 {
   Vec2 newPos;
   u_char axis;
@@ -89,10 +96,113 @@ void mlAdvance(MovLayer *ml, Region *fence)
 	
 	newPos.axes[axis] += (2*velocity);
 	ml->velocity.axes[axis] = 0;
+      }	//< if outside of fence
+      
+      
+    } // for axis 
+    ml->layer->posNext = newPos;
+  } //< for ml 
+  }*/
+
+
+void mlAdvance(MovLayer *ml)
+{
+  Vec2 newPos;
+  u_char axis;
+  Region shapeBoundary;
+  for (; ml; ml = ml->next) {
+    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
+    
+    ml->layer->posNext = newPos;
+  } //< for ml 
+}
+
+
+/** Advances a moving shape within a fence
+ *  
+ *  \param ml The moving shape to be advanced
+ *  \param fence The region which will serve as a boundary for ml
+ */
+/**If pixel is over the fence then changes direction of velocity*/
+/**Calculates newPos based on the velocity */
+
+/**If moving layer will be touching the region, turns the moving layer's velocity to 0*/
+void checkFences(MovLayer *ml, Region *fence)
+{
+  Vec2 newPos;
+  u_char axis;
+  Region shapeBoundary;
+  for (; ml; ml = ml->next) {
+    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
+    
+    abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
+    for (axis = 0; axis < 2; axis ++) {
+      if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) || //if touches fence
+	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
+	//int prevVelocity = ml->velocity.axes[axis];
+	//int velocity = -prevVelocity;
+	
+	//newPos.axes[axis] += (2*velocity);
+	ml->velocity.axes[axis] = 0;
       }	/**< if outside of fence */
       
+      
     } /**< for axis */
-    ml->layer->posNext = newPos;
+    
+  } /**< for ml */
+}
+
+int regionsIntersect(Region* reg1, Region* reg2){
+  vec2Add((&centerPos), (&(reg1->topLeft)), (&(reg1->botRight)) );
+
+  centerPos.axes[0] /= 2;  
+  centerPos.axes[1] /= 2;
+
+  if(centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
+
+    if(centerPos.axes[1] <= reg2->botRight.axes[1] && centerPos.axes[1] >= reg2->topLeft.axes[1]){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/** Advances a moving shape within a fence
+ *  
+ *  \param ml The moving shape to be advanced
+ *  \param fence The region which will serve as a boundary for ml
+ */
+/**If pixel is over the fence then changes direction of velocity*/
+/**Calculates newPos based on the velocity */
+
+/**If moving layer will be touching the region, turns the moving layer's velocity to 0*/
+void checkFencesOutside(MovLayer *ml, Region *fence)
+{
+  Vec2 newPos;
+  u_char axis;
+  Region shapeBoundary;
+  for (; ml; ml = ml->next) {
+    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
+    
+    abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
+    for (axis = 0; axis < 2; axis ++) {
+      /*if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) || //if touches fence
+	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
+	//int prevVelocity = ml->velocity.axes[axis];
+	//int velocity = -prevVelocity;
+	
+	//newPos.axes[axis] += (2*velocity);
+	
+      }	///< if outside of fence
+      else{
+	ml->velocity.axes[axis] = 0;
+      }*/
+      if(regionsIntersect(&shapeBoundary, fence)){
+	ml->velocity.axes[axis] = 0;
+      }
+      
+    } /**< for axis */
+    
   } /**< for ml */
 }
 
@@ -101,10 +211,9 @@ u_int bgColor = COLOR_BLACK;     /**< The background color */
 int redrawScreen = 1;           /**< Boolean for whether screen needs to be redrawn */
 
 Region fieldFence;		/**< fence around playing field  */
+Region obstacleFence0, obstacleFence1, obstacleFence2, obstacleFence3, obstacleFence4; 
 
-Vec2 centerPos = {
-  {0,0}
-};
+
 
 
 void objectCollisions(){
@@ -121,7 +230,7 @@ void objectCollisions(){
   int pacDot, newX, newY;
 
   //Finds if any of the pacdots collide with pacman
-  for(pacDot = 0; pacDot < 10; pacDot++){
+  for(pacDot = 0; pacDot < 6; pacDot++){
     switch(pacDot){
     case 0: pacDotLayer = &pacDotsLayer0; newX = 75; newY = 3; break;
     case 1: pacDotLayer = &pacDotsLayer1; newX = 85; newY = 3; break;
@@ -129,10 +238,10 @@ void objectCollisions(){
     case 3: pacDotLayer = &pacDotsLayer3; newX = 105; newY = 3; break;
     case 4: pacDotLayer = &pacDotsLayer4; newX = 115; newY = 3; break;
     case 5: pacDotLayer = &pacDotsLayer5; newX = 75; newY = 10; break;
-    case 6: pacDotLayer = &pacDotsLayer6; newX = 85; newY = 10; break;
-    case 7: pacDotLayer = &pacDotsLayer7; newX = 95; newY = 10; break;
-    case 8: pacDotLayer = &pacDotsLayer8; newX = 105; newY = 10; break;
-    case 9: pacDotLayer = &pacDotsLayer9; newX = 115; newY = 10; break;
+      //case 6: pacDotLayer = &pacDotsLayer6; newX = 85; newY = 10; break;
+      //case 7: pacDotLayer = &pacDotsLayer7; newX = 95; newY = 10; break;
+      //case 8: pacDotLayer = &pacDotsLayer8; newX = 105; newY = 10; break;
+      //case 9: pacDotLayer = &pacDotsLayer9; newX = 115; newY = 10; break;
     default: return;
     }
     
@@ -147,6 +256,7 @@ void objectCollisions(){
       pacDotsGotten++;
     }
   }
+  
 }
 
 /**Finds if center of a region1 is inside region2, if so returns true*/
@@ -185,11 +295,15 @@ void main()
 
   
   layerGetBounds(&fieldLayer, &fieldFence);
+  layerGetBounds(&obstacleLayer0, &obstacleFence0);
+  layerGetBounds(&obstacleLayer1, &obstacleFence1);
+  layerGetBounds(&obstacleLayer2, &obstacleFence2);
+  layerGetBounds(&obstacleLayer3, &obstacleFence3);
+  layerGetBounds(&obstacleLayer4, &obstacleFence4);
   p2sw_init( SWITCHES );
 
   
-    drawString5x7(1,3, "Lives", COLOR_GREEN, COLOR_RED);
-  //drawPacmanFont((1,3, "Livesabcde ", COLOR_GREEN, COLOR_RED));
+  drawString5x7(1,3, "Lives", COLOR_GREEN, COLOR_RED);
   enableWDTInterrupts();      /**< enable periodic interrupt */
 
   
@@ -215,8 +329,15 @@ void wdt_c_handler()
   static short count = 0;
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
-  if (count == 15) { //used to be 15
-    mlAdvance(&ml0, &fieldFence);
+  if (count >= 15) { //used to be 15
+    //mlAdvance(&ml0, &fieldFence);
+    checkFences(&ml0, &fieldFence);
+    checkFencesOutside(&ml0, &obstacleFence0);
+    checkFencesOutside(&ml0, &obstacleFence1);
+    checkFencesOutside(&ml0, &obstacleFence2);
+    checkFencesOutside(&ml0, &obstacleFence3);
+    checkFencesOutside(&ml0, &obstacleFence4);
+    mlAdvance(&ml0);
     objectCollisions();
     if (p2sw_read())
       redrawScreen = 1;
