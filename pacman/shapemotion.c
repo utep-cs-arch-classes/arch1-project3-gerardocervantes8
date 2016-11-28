@@ -1,5 +1,6 @@
 
 
+
 /** \file shapemotion.c
  *  \brief This is a simple shape motion demo.
  *  This demo creates two layers containing shapes.
@@ -74,38 +75,6 @@ movLayerDraw(MovLayer *movLayers, Layer *layers)
 
 //Region fence = {{10,30}, {SHORT_EDGE_PIXELS-10, LONG_EDGE_PIXELS-10}}; /**< Create a fence region */
 
-/** Advances a moving shape within a fence
- *  
- *  \param ml The moving shape to be advanced
- *  \param fence The region which will serve as a boundary for ml
- */
-/**If pixel is over the fence then changes direction of velocity*/
-/**Calculates newPos based on the velocity */
-/*void mlAdvance(MovLayer *ml, Region *fence)
-{
-  Vec2 newPos;
-  u_char axis;
-  Region shapeBoundary;
-  for (; ml; ml = ml->next) {
-    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
-    
-    abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
-    for (axis = 0; axis < 2; axis ++) {
-      if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) || //if touches fence
-	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
-	int prevVelocity = ml->velocity.axes[axis];
-	int velocity = -prevVelocity;
-	
-	newPos.axes[axis] += (2*velocity);
-	ml->velocity.axes[axis] = 0;
-      }	//< if outside of fence
-      
-      
-    } // for axis 
-    ml->layer->posNext = newPos;
-  } //< for ml 
-  }*/
-
 
 void mlAdvance(MovLayer *ml)
 {
@@ -139,12 +108,8 @@ void checkFences(MovLayer *ml, Region *fence)
     
     abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
     for (axis = 0; axis < 2; axis ++) {
-      if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) || //if touches fence
+      if ((shapeBoundary.topLeft.axes[axis] <= fence->topLeft.axes[axis]) || //if touches fence
 	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
-	//int prevVelocity = ml->velocity.axes[axis];
-	//int velocity = -prevVelocity;
-	
-	//newPos.axes[axis] += (2*velocity);
 	ml->velocity.axes[axis] = 0;
       }	/**< if outside of fence */
       
@@ -158,11 +123,11 @@ int regionsIntersect(Region* reg1, Region* reg2){
   vec2Add((&centerPos), (&(reg1->topLeft)), (&(reg1->botRight)) );
 
   centerPos.axes[0] /= 2;  
-  centerPos.axes[1] /= 2;
+  centerPos.axes[1] /= 2;/**Finds center of region 1*/
 
-  if(centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
+  if(centerPos.axes[0] >= (reg2->topLeft.axes[0]-6) && centerPos.axes[0] <= (reg2->botRight.axes[0]+6)){ /**Left of region, right of region*/
 
-    if(centerPos.axes[1] <= reg2->botRight.axes[1] && centerPos.axes[1] >= reg2->topLeft.axes[1]){
+    if(centerPos.axes[1] <= (reg2->botRight.axes[1]+7) && centerPos.axes[1] >= (reg2->topLeft.axes[1]-6)){ /**bottom of region, top of region*/
       return 1;
     }
   }
@@ -188,17 +153,6 @@ void checkFencesOutside(MovLayer *ml, Region *fence)
     
     abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
     for (axis = 0; axis < 2; axis ++) {
-      /*if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) || //if touches fence
-	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
-	//int prevVelocity = ml->velocity.axes[axis];
-	//int velocity = -prevVelocity;
-	
-	//newPos.axes[axis] += (2*velocity);
-	
-      }	///< if outside of fence
-      else{
-	ml->velocity.axes[axis] = 0;
-      }*/
       if(regionsIntersect(&shapeBoundary, fence)){
 	ml->velocity.axes[axis] = 0;
       }
@@ -212,10 +166,33 @@ void checkFencesOutside(MovLayer *ml, Region *fence)
 u_int bgColor = COLOR_BLACK;     /**< The background color */
 int redrawScreen = 1;           /**< Boolean for whether screen needs to be redrawn */
 
-Region fieldFence;		/**< fence around playing field  */
-Region obstacleFence0, obstacleFence1, obstacleFence2, obstacleFence3, obstacleFence4; 
+static Region fieldFence;		/**< fence around playing field  */
+static Region obstacleFence0, obstacleFence1, obstacleFence2, obstacleFence3, obstacleFence4; 
 
 
+
+void updatePacDotText(int pacDots){
+  short width = screenWidth/3+20;
+  short height = 3;
+  /*int color = COLOR_GREEN;
+    int BGcolor = COLOR_RED;*/
+  int color = COLOR_RED;
+  int BGcolor = COLOR_GREEN;
+  
+  char text[] = "0"; 
+  switch(pacDots){
+  case 0: text[0] = '0'; break;
+  case 1: text[0] = '1'; break;
+  case 2: text[0] = '2'; break;
+  case 3: text[0] = '3'; break;
+  case 4: text[0] = '4'; break;
+  case 5: text[0] = '5'; break;
+  case 6: text[0] = '6'; break;
+  default: text[0] = '7'; break;
+
+  }
+  drawString5x7(width, height, text, color, BGcolor);
+}
 
 
 void objectCollisions(){
@@ -240,10 +217,6 @@ void objectCollisions(){
     case 3: pacDotLayer = &pacDotsLayer3; newX = 105; newY = 3; break;
     case 4: pacDotLayer = &pacDotsLayer4; newX = 115; newY = 3; break;
     case 5: pacDotLayer = &pacDotsLayer5; newX = 75; newY = 10; break;
-      //case 6: pacDotLayer = &pacDotsLayer6; newX = 85; newY = 10; break;
-      //case 7: pacDotLayer = &pacDotsLayer7; newX = 95; newY = 10; break;
-      //case 8: pacDotLayer = &pacDotsLayer8; newX = 105; newY = 10; break;
-      //case 9: pacDotLayer = &pacDotsLayer9; newX = 115; newY = 10; break;
     default: return;
     }
     
@@ -256,12 +229,12 @@ void objectCollisions(){
       pacDotLayer->pos.axes[1] = newY;
       
       pacDotsGotten++;
+      updatePacDotText(pacDotsGotten);
       sound_start(2);
     }
   }
   
 }
-
 /**Finds if center of a region1 is inside region2, if so returns true*/
 int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
   
@@ -273,6 +246,59 @@ int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
     }
   }
   return 0;
+}
+
+void drawAllLayers(){
+
+Layer obstacleLayer4 = {		// playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {((screenWidth/4)*3)-3, ((screenHeight/4))+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &pacmanLayer0 
+};
+Layer obstacleLayer3 = {		// playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {((screenWidth/4))+3, ((screenHeight/4)*3)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &obstacleLayer4
+};
+
+
+Layer obstacleLayer2 = {		// playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {(screenWidth/2)-1, (screenHeight/2)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &obstacleLayer3
+};
+Layer obstacleLayer1 = {		// playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {((screenWidth/4)*3)-3, ((screenHeight/4)*3)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &obstacleLayer2
+};
+
+Layer obstacleLayer0 = {		 //playing field as a layer 
+  (AbShape *) &obstacleOutline,
+  {screenWidth/4+3, (screenHeight/4)+6},//< center 
+  {0,0}, {0,0},				    // last & next pos 
+  COLOR_BLUE,
+  &obstacleLayer1 
+};
+ 
+ layerInit(&obstacleLayer0);
+ layerDraw(&obstacleLayer0);
+ 
+ layerGetBounds(&obstacleLayer0, &obstacleFence0);
+ layerGetBounds(&obstacleLayer1, &obstacleFence1);
+ layerGetBounds(&obstacleLayer2, &obstacleFence2);
+ layerGetBounds(&obstacleLayer3, &obstacleFence3);
+ layerGetBounds(&obstacleLayer4, &obstacleFence4);
+ 
+ 
 }
 
 /** Initializes everything, enables interrupts and green LED, 
@@ -288,27 +314,26 @@ void main()
   lcd_init();
 
   buzzer_init();
-  buzzer_stop();
   shapeInit();
-  //p2sw_init(1);
-  //shapeInit();
   
+  //layerInit(&pacmanLayer0);
+  //layerDraw(&pacmanLayer0);
   
-  
-  layerInit(&pacmanLayer0);
-  layerDraw(&pacmanLayer0);
-
-  
-  layerGetBounds(&fieldLayer, &fieldFence);
-  layerGetBounds(&obstacleLayer0, &obstacleFence0);
+  /*layerGetBounds(&obstacleLayer0, &obstacleFence0);
   layerGetBounds(&obstacleLayer1, &obstacleFence1);
   layerGetBounds(&obstacleLayer2, &obstacleFence2);
   layerGetBounds(&obstacleLayer3, &obstacleFence3);
-  layerGetBounds(&obstacleLayer4, &obstacleFence4);
+  layerGetBounds(&obstacleLayer4, &obstacleFence4);*/
+  drawAllLayers();
+  layerGetBounds(&fieldLayer, &fieldFence);
+  
   p2sw_init( SWITCHES );
 
   
-  drawString5x7(1,3, "Lives", COLOR_GREEN, COLOR_RED);
+  drawString5x7(7,4, "PACMAN", COLOR_GREEN, COLOR_RED);
+
+  updatePacDotText(pacDotsGotten);
+    
   enableWDTInterrupts();      /**< enable periodic interrupt */
 
   
@@ -331,11 +356,11 @@ void main()
 /** Watchdog timer interrupt handler. 15 interrupts/sec */
 void wdt_c_handler()
 {
-  static short count = 0;
+  static char count = 0;
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
-  if (count >= 15) { //used to be 15
-    //mlAdvance(&ml0, &fieldFence);
+
+  if (count >= 16) { //used to be 15
     checkFences(&ml0, &fieldFence);
     checkFencesOutside(&ml0, &obstacleFence0);
     checkFencesOutside(&ml0, &obstacleFence1);

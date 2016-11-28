@@ -20,24 +20,24 @@ static char isPlayingSound = 0;
 
 //static int loseSound[5] = {400,500,600,715,795};
 
-static int loseSound[2] = {400,500};
+/**400 and 500 pitch*/
+static char loseSound[2] = {4,5};
 
 
 /**Given the winStreak, updates the sound to check if need to change the buzzer based on hte song playing
 @Parameter winstreak is used to be able to play the win sound based on the current winStreak*/
 void sound_update(int winStreak){
   switch(isPlayingSound){
-  case 1: sound_win_play(winStreak); break;
+    // case 1: sound_win_play(winStreak); break;
   case 2: sound_play_song(); break;
-  default: break;
   }
 }
 
 /**Plays the win sound, win sound is dependent on the winStreak*/
-void sound_win_play(int winStreak){
-  static int soundCounter = 0;
+/*void sound_win_play(int winStreak){
+  static char soundCounter = 0;
   buzzer_set_period(sound_win_pitch(winStreak));
-    /**Amount of time win sound lasts*/
+    //Amount of time win sound lasts
   if(soundCounter > 15){ 
     sound_stop();
     soundCounter = 0;
@@ -58,9 +58,10 @@ void sound_start(int typeOfSound){
 
 /**Sound starts playing lose song*/
 void sound_play_song(){
-  static int soundCounter = 0;
-  static int note = 0;
-  buzzer_set_period(loseSound[note]);
+  static char soundCounter = 0;
+  static char note = 0;
+  int soundToPlay = loseSound[note] * 100;
+  buzzer_set_period(soundToPlay);
 
   /**Length that each note will play to*/
   if(soundCounter > 2){
@@ -88,9 +89,9 @@ void sound_stop(){
 
 /**Returns the pitch that win sound should be
 @Parameter winStreak used to change pitch of sound*/
-int sound_win_pitch(int winStreak){
+/*int sound_win_pitch(int winStreak){
   
   return (winStreak*100) + 100;
-}
+  }*/
 
     

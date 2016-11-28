@@ -18,7 +18,7 @@ void buzzer_init()
     P2SEL &= ~BIT7; 
     P2SEL |= BIT6;
     P2DIR |= BIT6;		/* enable output to speaker (P2.6) */
-    buzzer_set_period(600);	/* start buzzing!!! */
+    //buzzer_set_period(600);	/* start buzzing!!! */
 }
 
 /**Starts the buzzer, you need to make sure buzzer is playing at frequency*/

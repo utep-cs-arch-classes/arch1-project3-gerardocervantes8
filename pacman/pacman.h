@@ -3,7 +3,7 @@
 //AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
 //AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
-static unsigned short pacDotsGotten = 0;
+static short pacDotsGotten = 0;
 
 
 static AbRectOutline fieldOutline = {	/* playing field */
@@ -13,7 +13,7 @@ static AbRectOutline fieldOutline = {	/* playing field */
 
 static AbRectOutline obstacleOutline = {	// playing field 
   abRectOutlineGetBounds, abRectOutlineCheck,   
-  {18, 9} //obstacle (width), (height)
+  {15, 9} //obstacle (width), (height) //18 to 13
 };
 
 
@@ -49,7 +49,7 @@ static Layer pacDotsLayer6 = {		//< Layer with an orange circle
   &pacDotsLayer7,
 };*/
 
-static Layer pacDotsLayer5 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer5 = {		/**< Layer with an orange circle */
   (AbShape *)&circle2,
   {screenWidth-20, 27}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -57,7 +57,7 @@ static Layer pacDotsLayer5 = {		/**< Layer with an orange circle */
   0,
 };
 
-static Layer pacDotsLayer4 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer4 = {		/**< Layer with an orange circle */
   (AbShape *)&circle2,
   {20, 27}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -96,7 +96,7 @@ Layer pacDotsLayer0 = {		/**< Layer with an orange circle */
   COLOR_ORANGE,
   &pacDotsLayer1,
 };
-
+/*
 Layer obstacleLayer4 = {		// playing field as a layer 
   (AbShape *) &obstacleOutline,
   {((screenWidth/4)*3)-3, ((screenHeight/4))+6},//< center 
@@ -134,14 +134,14 @@ Layer obstacleLayer0 = {		 //playing field as a layer
   {0,0}, {0,0},				    // last & next pos 
   COLOR_BLUE,
   &obstacleLayer1 
-};
+};*/
 
 Layer fieldLayer = {		/* playing field as a layer */
   (AbShape *) &fieldOutline,
   {screenWidth/2-1, (screenHeight/2)+6},/**< center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_BLUE,
-  &obstacleLayer0 //previously &layer3
+  &pacDotsLayer0
 };
 
 Layer pacmanLayer0 = {		/**< Layer with an orange circle */
@@ -149,7 +149,7 @@ Layer pacmanLayer0 = {		/**< Layer with an orange circle */
   {screenWidth/2, (screenHeight-14)}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
-  &fieldLayer, //previously &layer1,
+  &fieldLayer, 
 };
 
 
@@ -168,14 +168,14 @@ typedef struct MovLayer_s {
 //MovLayer ml9 = { &pacDotsLayer8, {0,0}, &ml10}; //moving layyer for pacman dot
 
 //MovLayer ml8 = { &pacDotsLayer7, {0,0}, 0}; //moving layyer for pacman dot /**MOVE NEXT IS 0***/
-//MovLayer ml7 = { &pacDotsLayer6, {0,0}, &ml8}; //moving layyer for pacman dot
-MovLayer ml6 = { &pacDotsLayer5, {0,0}, 0}; //moving layyer for pacman dot
-MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layyer for pacman dot
+//MovLayer ml7 = { &pacDotsLayer6, {0,0}, &ml8}; //moving layer for pacman dot
+MovLayer ml6 = { &pacDotsLayer5, {0,0}, 0}; //moving layer for pacman dot
+MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layer for pacman dot
 
 
-MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layyer for pacman dot
-MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layyer for pacman dot
-MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layyer for pacman dot
-MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layyer for pacman dot
+MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layer for pacman dot
+MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layer for pacman dot
+MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layer for pacman dot
+MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layer for pacman dot
 MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Pacman layer movement
 
