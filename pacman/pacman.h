@@ -23,15 +23,15 @@ static const AbRectOutline obstacleOutline = {	// fences inside outer border
 };
 
 
-Layer pacDotsLayer5 = {		//< Layer with pacdot
+Layer pacDotsLayer5 = {		//< Layer with pacdot, top-right
   (AbShape *)&circle2,
   {screenWidth-20, 27}, 
   {0,0}, {0,0},		
-  COLOR_ORANGE,
+  COLOR_DARK_ORANGE,
   &enemyLayer0,
 };
 
-Layer pacDotsLayer4 = {		//layer with pacdot
+Layer pacDotsLayer4 = {		//layer with pacdot, top-left
   (AbShape *)&circle2,
   {20, 27},
   {0,0}, {0,0},
@@ -39,7 +39,7 @@ Layer pacDotsLayer4 = {		//layer with pacdot
   &pacDotsLayer5,
 };
 
-Layer pacDotsLayer3 = {	//layer with pacdot	
+Layer pacDotsLayer3 = {	//layer with pacdot, middle-right
   (AbShape *)&circle2,
   {screenWidth-20, (screenHeight/2)+4}, 
   {0,0}, {0,0},				    /* last & next pos */
@@ -47,7 +47,7 @@ Layer pacDotsLayer3 = {	//layer with pacdot
   &pacDotsLayer4,
 };
 
-Layer pacDotsLayer2 = {   //layer with pacdot
+Layer pacDotsLayer2 = {   //layer with pacdot, middle-left
   (AbShape *)&circle2,
   {20, (screenHeight/2)+4}, 
   {0,0}, {0,0},				    /* last & next pos */
@@ -55,14 +55,14 @@ Layer pacDotsLayer2 = {   //layer with pacdot
   &pacDotsLayer3,
 };
 
-Layer pacDotsLayer1 = {		//layer with pacdot
+Layer pacDotsLayer1 = {		//layer with pacdot, bottom-right
   (AbShape *)&circle2,
   {screenWidth-20, (screenHeight-14)}, 
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
   &pacDotsLayer2,
 };
-Layer pacDotsLayer0 = {		//layer with pacdot
+Layer pacDotsLayer0 = {		//layer with pacdot, bottom-left
   (AbShape *)&circle2,
   {14, (screenHeight-14)}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -78,7 +78,7 @@ Layer fieldLayer = {		/* playing field as a layer */
   &pacDotsLayer0
 };
 
-Layer pacmanLayer0 = {		//Layer with pacman (the character you control)
+Layer pacmanLayer0 = {		//Layer with pacman (character you control)
   (AbShape *)&circle5,
   {screenWidth/2, (screenHeight-14)}, 
   {0,0}, {0,0},				    /* last & next pos */

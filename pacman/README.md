@@ -106,21 +106,21 @@ despite them not being random.  This is because they have many states, and their
 
 ##Things to Improve on
 
-There was many more objects I wanted to add the game but couldn't because of hardware limitations.  Knowing this in advance, I could have change
+* There was many more objects I wanted to add the game but couldn't because of hardware limitations.  Knowing this in advance, I could have change
 how some of the current objects operate and could have chnaged how I decided to make the game.  A lot of developer time was done on fixing bugs
 based on hardware limitations, having a better idea about them and how to optimize them would have made it easier.
 
-Modularizing the game more, divide the program up into more C files.  Including making a C file with pacdots, which would contains all the pacdot
+* Modularizing the game more, divide the program up into more C files.  Including making a C file with pacdots, which would contains all the pacdot
 structs, object collision for the pacdots, and keeping track of amount of pacdots player has.  Also another C file containing all the fences, their structs
 and regions associated with them.
 
-Adding more songs would have helped the game greatly improve.
+* Adding more songs would have helped the game greatly improve.
 
-Improving the game over screen and making it so they could restart the game with button presses instead of having to reload the game
+* Improving the game over screen and making it so they could restart the game with button presses instead of having to reload the game
 or press the reset button on the msp430.  With the way that the program was done, this would be hard to implement because most information about inital
 position of objects is not saved (in order to optimize memory usage).
 
-Adding more features, including lives, levels, and more maps.  Though hardware limitations would have made it very difficult.
+* Adding more features, including lives, levels, and more maps.  Though hardware limitations would have made it very difficult.
 
 
 

@@ -1,14 +1,4 @@
 
-
-
-/** \file shapemotion.c
- *  \brief This is a simple shape motion demo.
- *  This demo creates two layers containing shapes.
- *  One layer contains a rectangle and the other a circle.
- *  While the CPU is running the green LED is on, and
- *  when the screen does not need to be redrawn the CPU
- *  is turned off along with the green LED.
- */  
 #include <msp430.h>
 #include <libTimer.h>
 #include <lcdutils.h>
@@ -26,7 +16,7 @@
 #define SWITCHES 0x0f  //Switches 1, 2, 3, and 4 in port 2
 
 /**Keeps track of amount of pacDots player has collected*/
-static short pacDotsGotten = 0;
+static char pacDotsGotten = 0;
 
 /**Used as a temporary variable to store center of pacmanLayer0
 Used to avoid having to call malloc*/
@@ -133,8 +123,8 @@ void updatePacDotText(int pacDots){
   case 5: text[0] = '5'; break;
   case 6: text[0] = '6'; break;
   default: text[0] = '7'; break;
-
   }
+  
   drawString5x7(width, height, text, color, BGcolor);
 }
 
@@ -150,10 +140,10 @@ void gameEnds(int state){
   clearScreen(COLOR_GREEN);
   sound_stop();
   if(state == 1){
-    drawString5x7((screenWidth/2) -5, screenHeight/2, "YOU LOSE", COLOR_GREEN, COLOR_RED);
+    drawString5x7((screenWidth/2) -15, screenHeight/2-5, "LOSER", COLOR_CYAN, COLOR_RED);
   }
   else{
-    drawString5x7((screenWidth/2) -5, screenHeight/2, "YOU WON", COLOR_GREEN, COLOR_RED);
+    drawString5x7((screenWidth/2) -15, screenHeight/2-5, "WINNER", COLOR_CYAN, COLOR_RED);
   }
   
   
@@ -162,7 +152,8 @@ void gameEnds(int state){
 }
 
 
-/**Finds what the center position of pacman is Vec2.  Stores result into centerPos structure*/
+/**Finds what the center position of pacman is Vec2. 
+ Stores result into centerPos structure*/
 void _pacmanCenterPos(){
   Region pacman;
   abShapeGetBounds((&pacmanLayer0)->abShape, &((&pacmanLayer0)->pos), &pacman);
@@ -172,7 +163,9 @@ void _pacmanCenterPos(){
 
 }
 
-/**Handles all object collisions*/
+/**Finds if player touches a pacdot.
+Moves the pacdots location if it was collected and increases pacdot counter
+Plays sound if player got a pacdot and updates score*/
 void objectCollisions(){
   
   _pacmanCenterPos();
@@ -209,6 +202,8 @@ void objectCollisions(){
   
 }
 
+/**Finds if pacman collides with any of the enemies
+   Ends game and tells player they lost if they touched the enemy*/
 void enemyCollision(){
 
   _pacmanCenterPos();
@@ -244,55 +239,64 @@ int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
   return 0;
 }
 
+/**Contains structures of obstacle fences, obstacle fences are only drawn once, which is why they are drawn
+in a method and not saved globally.  Regions for the obstacle fences are initalized, and all the layers
+are drawn when the method is called.*/
 void drawAllLayers(){
+  
+  Layer obstacleLayer4 = {		//top-right 
+    (AbShape *) &obstacleOutline,
+    {((screenWidth/4)*3)-7, ((screenHeight/4))+6},//< center 
+    {0,0}, {0,0},				    // last & next pos 
+    COLOR_BLUE,
+    &pacmanLayer0 
+  };
+  
+  Layer obstacleLayer3 = {                 //bottom-left
+    (AbShape *) &obstacleOutline,
+    {((screenWidth/4)+3), ((screenHeight/4)*3)+6},//< center 
+    {0,0}, {0,0},				    // last & next pos 
+    COLOR_BLUE,
+    &obstacleLayer4
+  };
+  
+  
+  Layer obstacleLayer2 = {		//center
+    (AbShape *) &obstacleOutline,
+    {(screenWidth/2)-1, (screenHeight/2)+6},//< center 
+    {0,0}, {0,0},				    // last & next pos 
+    COLOR_BLUE,
+    &obstacleLayer3
+  };
+  
+  
+  Layer obstacleLayer1 = {		// bottom-right
+    (AbShape *) &obstacleOutline,
+    {((screenWidth/4)*3)-3, ((screenHeight/4)*3)+6},//< center 
+    {0,0}, {0,0},				    // last & next pos 
+    COLOR_BLUE,
+    &obstacleLayer2
+  };
+  
+  
+  Layer obstacleLayer0 = {		 //top-left
+    (AbShape *) &obstacleOutline,
+    {screenWidth/4, (screenHeight/4)+6},//< center 
+    {0,0}, {0,0},				    // last & next pos 
+    COLOR_BLUE,
+    &obstacleLayer1 
+  };
+  
+  
+  layerInit(&obstacleLayer0);
+  layerDraw(&obstacleLayer0);
+  
+  layerGetBounds(&obstacleLayer0, &obstacleFence0);
+  layerGetBounds(&obstacleLayer1, &obstacleFence1);
+  layerGetBounds(&obstacleLayer2, &obstacleFence2);
+  layerGetBounds(&obstacleLayer3, &obstacleFence3);
+  layerGetBounds(&obstacleLayer4, &obstacleFence4); 
 
-Layer obstacleLayer4 = {		//top-right 
-  (AbShape *) &obstacleOutline,
-  {((screenWidth/4)*3)-7, ((screenHeight/4))+6},//< center 
-  {0,0}, {0,0},				    // last & next pos 
-  COLOR_BLUE,
-  &pacmanLayer0 
-};
- Layer obstacleLayer3 = {                 //bottom-left
-  (AbShape *) &obstacleOutline,
-  {((screenWidth/4)+3), ((screenHeight/4)*3)+6},//< center 
-  {0,0}, {0,0},				    // last & next pos 
-  COLOR_BLUE,
-  &obstacleLayer4
-};
-
-
- Layer obstacleLayer2 = {		//center
-  (AbShape *) &obstacleOutline,
-  {(screenWidth/2)-1, (screenHeight/2)+6},//< center 
-  {0,0}, {0,0},				    // last & next pos 
-  COLOR_BLUE,
-  &obstacleLayer3
-};
-Layer obstacleLayer1 = {		// bottom-right
-  (AbShape *) &obstacleOutline,
-  {((screenWidth/4)*3)-3, ((screenHeight/4)*3)+6},//< center 
-  {0,0}, {0,0},				    // last & next pos 
-  COLOR_BLUE,
-  &obstacleLayer2
-};
-
-Layer obstacleLayer0 = {		 //top-left
-  (AbShape *) &obstacleOutline,
-  {screenWidth/4, (screenHeight/4)+6},//< center 
-  {0,0}, {0,0},				    // last & next pos 
-  COLOR_BLUE,
-  &obstacleLayer1 
-};
- 
- layerInit(&obstacleLayer0);
- layerDraw(&obstacleLayer0);
- 
- layerGetBounds(&obstacleLayer0, &obstacleFence0);
- layerGetBounds(&obstacleLayer1, &obstacleFence1);
- layerGetBounds(&obstacleLayer2, &obstacleFence2);
- layerGetBounds(&obstacleLayer3, &obstacleFence3);
- layerGetBounds(&obstacleLayer4, &obstacleFence4); 
 }
 
 /** Initializes everything, enables interrupts and green LED, 
@@ -310,29 +314,17 @@ void main()
   buzzer_init();
   shapeInit();
 
-  //layerInit(&pacmanLayer0);
-  //layerDraw(&pacmanLayer0);
-  
-  /*layerGetBounds(&obstacleLayer0, &obstacleFence0);
-  layerGetBounds(&obstacleLayer1, &obstacleFence1);
-  layerGetBounds(&obstacleLayer2, &obstacleFence2);
-  layerGetBounds(&obstacleLayer3, &obstacleFence3);
-  layerGetBounds(&obstacleLayer4, &obstacleFence4);*/
   drawAllLayers();
   layerGetBounds(&fieldLayer, &fieldFence);
   
   p2sw_init( SWITCHES );
-
   
   drawString5x7( 7, 4, "PACMAN", COLOR_GREEN, COLOR_RED);
-
   updatePacDotText(pacDotsGotten);
     
   enableWDTInterrupts();      /**< enable periodic interrupt */
 
-  
   or_sr(0x8);	              /**< GIE (enable interrupts) */
-
 
   for(;;) { 
     while (!redrawScreen) { /**< Pause CPU if screen doesn't need updating */
@@ -356,16 +348,17 @@ void wdt_c_handler()
 
   if (count >= 16) { //used to be 15
     checkFences(&ml0, &fieldFence);
-    checkFencesOutside(&ml0, &obstacleFence0);
+    //Finds if any moving  will touch obstacle fence next position, if they will, set that objects velocity to 0
+    checkFencesOutside(&ml0, &obstacleFence0); 
     checkFencesOutside(&ml0, &obstacleFence1);
     checkFencesOutside(&ml0, &obstacleFence2);
     checkFencesOutside(&ml0, &obstacleFence3);
     checkFencesOutside(&ml0, &obstacleFence4);
-    mlAdvance(&ml0);
-    objectCollisions();
+    mlAdvance(&ml0); /**Advances all moving layers*/
+    objectCollisions(); /**Finds for collisions with pacdots or enemies*/
     enemyCollision();
-    sound_update(0);
-    enemyAI(1);
+    sound_update(0); //Updates sound
+    enemyAI(1); //Updates AI's velocity if their velocity is 0 from touching a wall
     enemyAI(2);
     if(pacDotsGotten == 6){ /**Player won!*/
       gameEnds(2);
