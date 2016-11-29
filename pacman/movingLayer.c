@@ -2,7 +2,8 @@
 #include "movingLayer.h"
 
 
-/*Updates next pos to be new pos, and redraws the layer*/
+/*Updates next pos to be new pos for the moving layers, 
+  Draws the layer*/
 void movLayerDraw(MovLayer *movLayers, Layer *layers)
 {
   int row, col;
@@ -42,7 +43,8 @@ void movLayerDraw(MovLayer *movLayers, Layer *layers)
   } // for moving layer being updated
 }	  
 
-/**Every moveLayer linked to the given movelayer, pos becomes posNext, used for movement*/
+/**Advances moving layer and all the movingLayers.next,
+   Advances by assigning posNext to pos*/
 void mlAdvance(MovLayer *ml)
 {
   Vec2 newPos;

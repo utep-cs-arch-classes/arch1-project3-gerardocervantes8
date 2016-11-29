@@ -1,0 +1,201 @@
+
+
+#Timing Game
+
+
+##How to Install game to MSP430
+
+Do the command "make all", in the main directoy to
+install the program onto the msp430.
+
+~~~
+$ make all
+~~~
+
+Enter the timingGame directory and then do
+
+~~~
+$ make load
+~~~
+
+So that the program can be loaded onto the MSP430
+
+
+To delete binaries:
+
+~~~
+$ make clean
+~~~
+
+##Summary of Game
+The program is a timing game that is ran on a msp430.
+
+The timing game utilizes the 4 buttons on the extension to the board, sound, and the 2 LEDS.
+To start playing the game, you need to press the button when the light turns green.
+You have a limited amount of time to press the button, you have to press the first button.
+
+The game is able to keep track of how many times you have won in a row.
+The game gets more difficult the more wins you have, if you lose once, your wins get reset.
+The sound gives you a hint abount how many wins you have, and there is a sound that happens when you lose.
+
+
+##Game Input
+
+4 buttons
+* Button 1:  Considered the play button, used to play the game.
+* Button 2:  Used to Pause the game.
+* Button 3:  Used to resume the game.
+* Button 4:  Is another play button used to play the game.
+
+##Game Output
+
+* Green LED: Indicates when you should press the play button so that you can win.
+* Red LED: Indicates that it will transition to green LED soon, pressing while it's red will cause you to lose.
+* Buzzer:  Lose sound and win sound are outputted using the buzzer.
+
+
+##Files in Repository
+
+* gameMain.c
+* led.c led.h
+* buzzer.c buzzer.h
+* sound.c sound.h
+* switches.c switches.h
+* state.c state.h
+* p2_interrupt_handler.c
+* wdInterruptHandler.c
+* Makefile
+* stateUpdateLed.s
+
+
+##Game States
+
+* State 0:  There are no lights that are on, and does nothing when play button is pressed.
+      	  This state is used as a small break before the game starts again.
+	  State 1 is not considered a break state because it can turn green at any time
+	  when in state 1.  From this state, the only possible next state is state 1 or to stay in state 0.
+
+* State 1:  Red LED is always on when in state 1. If the play button is pressed when in this state,
+      	  then the player will lose because they pressed the play button too early.  It will transition
+	  to state 2 once enough time passes.  It will move to state 0 if pause button is pressed.
+	  
+* State 2:  Green LED is on when in state 2.  If play button is pressed when in this state,
+      	  then player will win, and this win will be added to his win streak. When play button is pressed
+	  in this state win sound will be played and it will go back to state 1 so he can play again.
+	  If pause button is pressed, then goes to state 0.
+	  If enough time passes, it will move to state 3, time needed to move to state 3 is determined by amount of win streaks.
+	  The higher your win streak the harder it will be for you to win (press play button on time), because it will transition to state 3 faster.
+
+* State 3: Flickers both the Green Led and Red Led to make the LEDS appear to be dimming.  Resets the
+      	  win streak when in State 3.  Goes to state 0 after enough time is spent on this state.
+	  Pressing the play button will make it go to state 3 and play the lose sound.  Pressing pause
+	  button will make it go to state 1.
+
+
+##Dimming
+
+When in state 3, both LEDS are on, and they are made to be dimming.  The way that this is accomplished is by turning off and on
+both LEDS really fast.  If the flickering is done really fast, the LEDS are supposed to look like they are dimming.  This is what I use
+for the dimming of the lights.  The problem (bug) I have with the dimming, is that it is not noticeable that the LEDS are dimming.
+
+##Overview of Files
+
+
+* led.c
+
+LED c file is used to turn on or off the green or red LED.
+The Leds have to be initalized before they can be used by calling led_init().
+
+
+* buzzer.c
+
+The buzzer.c file is used to be able to turn on the sound.
+buzzer_init() should be called to be able to use.
+
+* switches.c
+
+switches.c file is used to initalize the buttons in port 2 so they are useable.
+Contains a handler for when a button is pressed and can detect which button was pressed.
+
+* sound.c
+
+Contains the winning and lose sounds. Can be used to plays or stop the sounds.
+Songs are contained in an integer array.
+
+* state.c
+
+include led.h
+
+include sound.h
+
+Keeps track of what state the game is in.  Uses
+a counter to measure how long it as been in the state. Also changes the sound and LEDS based
+on the state that it is in.
+
+* stateUpdateLed.s
+
+Contains the state_update_red_led(int state, int counter) method, method is written in assembly.
+The method returns 1 or 0.  The method returns 1 if red led should be on at given state.
+
+Contains the state_update_green_led(int state, int counter) method, method is written in assembly.
+The method returns 1 or 0.  The method returns 1 if green led should be on at given state.
+
+
+##Assembly file
+
+###stateUpdateLed.s
+
+The Assembly file has 2 global methods that are used.
+
+* state_update_red_led(int state, int counter):  The method returns an updated red LED based on the current state and counter.
+The method returns 1 if the red led should be on at given state, returns 0 if it should be off at given state.
+
+The assembly file manipulates data by using the registers.
+
+r12 contains current state
+r13 contains current counter (time spent on state)
+
+state 0, red light should be off
+state 1, red light should be on
+state 2, red light should be off
+state 3, red light should be oscillating between on and off, this is why have counter as param.  We use (counter % 2) to determine if light's on or off
+
+Before returning back to caller, we write our return (whether red led should be on or off) onto r12.
+
+
+* state_update_green_led(int state, int counter):  The method returns an updated green LED based on the current state and counter.
+The method returns 1 if the green led should be on at given state, returns 0 if it should be off at given state.
+
+The assembly file manipulates data by using the registers.
+
+r12 contains current state
+r13 contains current counter (time spent on state)
+
+state 0, green light should be off
+state 1, green light should be off
+state 2, green light should be on
+state 3, green light should be oscillating between on and off, this is why have counter as param.  We use (counter % 2) to determine if light's on or off
+
+Before returning back to caller, we write our return (whether green led should be on or off) onto r12.
+
+
+##Credits
+
+Used demo code by Eric Freudenthal to help me make the game.
+Demo code greatly helped in understanding how to program in the MSP430.
+Got help from the TA's in the lab
+
+Instructor: Eric Freudenthal
+
+Teacher assistants: Daniel Cervantes, David Pruitt
+
+Author: Gerardo Cervantes
+
+
+##Bugs
+
+Dimming bug:
+
+There is a bug in the dimming.  Dimming does not work as intended, the lights should be more dim in state 3.  As it is, the lights
+do dim, but they don't dim as much as was intended.  The reason for the bug is that the LEDS don't flash fast enough for it to appear to be dimming.
+The lights are dimming, but not enough to notice unless you go from both lights dimming, to both lights on.

@@ -7,9 +7,10 @@
 #include "movingLayer.h"
 
 
-const AbRect rect10 = {abRectGetBounds, abRectCheck, {6,6}}; /**< 10x10 rectangle */
+/**Shape that the enemies will be*/
+const AbRect rect10 = {abRectGetBounds, abRectCheck, {6,6}}; /**< 6x6 rectangle */
 
-Layer enemyLayer1 = {		/**< Layer with an orange circle */
+Layer enemyLayer1 = {	  //Layer with second enemy
   (AbShape *)&rect10,
   {screenWidth/2-30, screenHeight/2 -55}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -17,7 +18,7 @@ Layer enemyLayer1 = {		/**< Layer with an orange circle */
   0,
 };
 
-Layer enemyLayer0 = {		/**< Layer with an orange circle */
+Layer enemyLayer0 = {	//Layer with first enemy
   (AbShape *)&rect10,
   {screenWidth-30, screenHeight/2 - 15}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -25,8 +26,8 @@ Layer enemyLayer0 = {		/**< Layer with an orange circle */
   &enemyLayer1,
 };
 
-MovLayer movingEnemy1 = { &enemyLayer1, {5,0}, 0}; //ml8
-MovLayer movingEnemy0 = { &enemyLayer0, {-5,0}, &movingEnemy1};
+MovLayer movingEnemy1 = { &enemyLayer1, {5,0}, 0};  //Moving layer with second enemy
+MovLayer movingEnemy0 = { &enemyLayer0, {-5,0}, &movingEnemy1}; //Moving layer with first enemy
 
 void enemyDraw();
 void enemyAI(int i);

@@ -25,7 +25,11 @@
 #define RED_LED BIT0
 #define SWITCHES 0x0f  //Switches 1, 2, 3, and 4 in port 2
 
+/**Keeps track of amount of pacDots player has collected*/
+static short pacDotsGotten = 0;
 
+/**Used as a temporary variable to store center of pacmanLayer0
+Used to avoid having to call malloc*/
 Vec2 centerPos = {
   {0,0}
 };

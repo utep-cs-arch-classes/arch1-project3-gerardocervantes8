@@ -5,66 +5,64 @@
 
 #include "movingLayer.h"
 
+/**Gets enemy layers and moving layers to link them to the rest of the layers*/
 extern Layer enemyLayer1;
 extern Layer enemyLayer0;
 extern MovLayer movingEnemy1;
 extern MovLayer movingEnemy0;
 
 
-
-static short pacDotsGotten = 0;
-
-
-static const AbRectOutline fieldOutline = {	/* playing field */
+static const AbRectOutline fieldOutline = {	// playing field (outer border)
   abRectOutlineGetBounds, abRectOutlineCheck,   
   {screenWidth/2 - 5, screenHeight/2 - 10}
 };
 
-static const AbRectOutline obstacleOutline = {	// playing field 
+static const AbRectOutline obstacleOutline = {	// fences inside outer border
   abRectOutlineGetBounds, abRectOutlineCheck,   
-  {15, 9} //obstacle (width), (height) //18 to 13
+  {15, 9} //obstacle (width), (height)
 };
 
-Layer pacDotsLayer5 = {		/**< Layer with an orange circle */
+
+Layer pacDotsLayer5 = {		//< Layer with pacdot
   (AbShape *)&circle2,
-  {screenWidth-20, 27}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
+  {screenWidth-20, 27}, 
+  {0,0}, {0,0},		
   COLOR_ORANGE,
   &enemyLayer0,
 };
 
-Layer pacDotsLayer4 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer4 = {		//layer with pacdot
   (AbShape *)&circle2,
-  {20, 27}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
+  {20, 27},
+  {0,0}, {0,0},
   COLOR_ORANGE,
   &pacDotsLayer5,
 };
 
-Layer pacDotsLayer3 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer3 = {	//layer with pacdot	
   (AbShape *)&circle2,
-  {screenWidth-20, (screenHeight/2)+4}, /**< bit below & right of center */
+  {screenWidth-20, (screenHeight/2)+4}, 
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
   &pacDotsLayer4,
 };
 
-Layer pacDotsLayer2 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer2 = {   //layer with pacdot
   (AbShape *)&circle2,
-  {20, (screenHeight/2)+4}, /**< bit below & right of center */
+  {20, (screenHeight/2)+4}, 
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
   &pacDotsLayer3,
 };
 
-Layer pacDotsLayer1 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer1 = {		//layer with pacdot
   (AbShape *)&circle2,
-  {screenWidth-20, (screenHeight-14)}, /**< bit below & right of center */
+  {screenWidth-20, (screenHeight-14)}, 
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
   &pacDotsLayer2,
 };
-Layer pacDotsLayer0 = {		/**< Layer with an orange circle */
+Layer pacDotsLayer0 = {		//layer with pacdot
   (AbShape *)&circle2,
   {14, (screenHeight-14)}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
@@ -80,21 +78,21 @@ Layer fieldLayer = {		/* playing field as a layer */
   &pacDotsLayer0
 };
 
-Layer pacmanLayer0 = {		/**< Layer with an orange circle */
+Layer pacmanLayer0 = {		//Layer with pacman (the character you control)
   (AbShape *)&circle5,
-  {screenWidth/2, (screenHeight-14)}, /**< bit below & right of center */
+  {screenWidth/2, (screenHeight-14)}, 
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_ORANGE,
   &fieldLayer, 
 };
 
 
-MovLayer ml6 = { &pacDotsLayer5, {0,0}, &movingEnemy0}; //moving layer for pacman dot
-MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layer for pacman dot
-MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layer for pacman dot
-MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layer for pacman dot
-MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layer for pacman dot
-MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layer for pacman dot
-MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Pacman layer movement
+MovLayer ml6 = { &pacDotsLayer5, {0,0}, &movingEnemy0}; //moving layer for pacdot
+MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layer for pacdot
+MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layer for pacdot
+MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layer for pacdot
+MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layer for pacdot
+MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layer for pacdot
+MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Moving layer with Pacman
 
 #endif
