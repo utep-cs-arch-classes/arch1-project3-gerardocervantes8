@@ -34,8 +34,8 @@ Pacman utilizes the 4 buttons on the extension to the board, sound, and the led 
 Once you load the program onto the msp430, the game will start.
 To control pacman you will need to use the 4 buttons on the msp430 extension board.
 
-To win:  You must collect all the pacdots (6 of them) in the game.
-How can you lose?: You will lose if you touch an enemy, you can tell who an enemy is by their red color.
+Objective:  You must collect all the pacdots (6 of them) in the game.
+How can you lose? You will lose if you touch an enemy, you can tell who an enemy is by their red color.
 Enemies are always red.
 The enemies in this game are the red sliding disks
 
@@ -81,22 +81,26 @@ Other output
 
 
 
+##Internally how the game runs
+
+The program first starts by initalizing everything it will need to use.  The program then starts drawing all the layers.  Interrupts are then turned on and CPU is turned off.  The CPU then turns on every time an interrupts happens.  The interrupt handler then takes care of advancing every moving layer and doing any needed operation for the games that are needed before the CPU is turned off again.
+
+In the case of pacman, during an interrupt.  The game checks for collisions between fences, pacdots and other objects.  
+
+
+* Buttons:
+
 ##Optimizations
 
 There were optimizations that were done to the program.  Most of the optimizations were done to reduce
 amount of memory used in ram.  While making the program, I found there was very little ram to use, causing errors
 when trying to use more.
 
-* Obstacle fence optimization:  Instead of saving positions, color, and shape of the obstacle fence.  Intead we only save the region (which
-we were already saving for object collision), the region will be saved for object collision.  With the optimization, we only draw the fence once,
-then we can free the struct we used to draw it, and only keep the regions for collision detection.  Since we only drew once, if an object collides
-with the fences they will disappear, but with the regions we saved, we can ensure that no object touches the fence.
+* Obstacle fence optimization:  Instead of saving positions, color, and shape of the obstacle fence.  Intead we only save the region (which we were already saving for object collision), the region will be saved for object collision.  With the optimization, we only draw the fence once, then we can free the struct we used to draw it, and only keep the regions for collision detection.  Since we only drew once, if an object collides with the fences they will disappear, but with the regions we saved, we can ensure that no object touches the fence.
 
-* Constants:  Global variables (including structs) that didn't change had the constant modifier added to them.  This would cause the variable to
-be added to flash memory instead.  With flash memory there was no struggle with using it all, so it was fine to change them to constants.
+* Constants:  Global variables (including structs) that didn't change had the constant modifier added to them.  This would cause the variable to be added to flash memory instead.  With flash memory there was no struggle with using it all, so it was fine to change them to constants.
 
-* Variable Size:  I made sure to make global variables char instead of short if there was enough space for the variable in char.
-Paying attention to all the global variables declared and rethinking whether they should be char, short, or long was done for this optimization.
+* Variable Size:  I made sure to make global variables char instead of short if there was enough space for the variable in char. Paying attention to all the global variables declared and rethinking whether they should be char, short, or long was done for this optimization.
 
 
 ##Artifical Intelligence for Enemies
@@ -104,26 +108,7 @@ Paying attention to all the global variables declared and rethinking whether the
 The enemy AI in this game does not use randomness.  So the enemies follow a set pattern/states.  The enemies were made faster than the player because the AI was not smart enough to get the player.  There are 2 enemies in the game.  Knowing where they will be is difficult despite them not being random.  This is because they have many states, and their states change whenever they hit a wall.
 
 
-Whenever any moving objects hits a wall, their velocity turns to 0.  The artifical intelligence in this game checks whenever the velocity of the enemies is 0, if it is, then it updates their velocity to a new velocity.  The enemies can go in all 8 directions.  Up, down, left, right, down-left, down-right, up-left, up-right.  The next state they go to determines what direction.  I decided what direction each state will have arbitrarily.
-
-
-##Things to Improve on
-
-* There was many more objects I wanted to add the game but couldn't because of hardware limitations.  Knowing this in advance, I could have change
-how some of the current objects operate and could have chnaged how I decided to make the game.  A lot of developer time was done on fixing bugs
-based on hardware limitations, having a better idea about them and how to optimize them would have made it easier.
-
-* Modularizing the game more, divide the program up into more C files.  Including making a C file with pacdots, which would contains all the pacdot
-structs, object collision for the pacdots, and keeping track of amount of pacdots player has.  Also another C file containing all the fences, their structs
-and regions associated with them.
-
-* Adding more songs would have helped the game greatly improve.
-
-* Improving the game over screen and making it so they could restart the game with button presses instead of having to reload the game
-or press the reset button on the msp430.  With the way that the program was done, this would be hard to implement because most information about inital
-position of objects is not saved (in order to optimize memory usage).
-
-* Adding more features, including lives, levels, and more maps.  Though hardware limitations would have made it very difficult.
+Whenever any moving objects hits a wall, their velocity turns to 0.  The artifical intelligence in this game checks whenever the velocity of the enemies is 0, if it is, then it updates their velocity to a new velocity.  The enemies can go in all 8 directions.  Up, down, left, right, down-left, down-right, up-left, up-right.  The next state they go to determines what direction.  I decided what direction each state will have seemingly arbitrarily.
 
 
 
@@ -161,6 +146,27 @@ Songs are contained in an integer array.
 
 Contains the structure used for creating a moving layer.  Also contains the functions/methods for advancing the moving layer
 to it's next position.
+
+
+
+##Things to Improve on
+
+* There was many more objects I wanted to add the game but couldn't because of hardware limitations.  Knowing this in advance, I could have change
+how some of the current objects operate and could have chnaged how I decided to make the game.  A lot of developer time was done on fixing bugs
+based on hardware limitations, having a better idea about them and how to optimize them would have made it easier.
+
+* Modularizing the game more, divide the program up into more C files.  Including making a C file with pacdots, which would contains all the pacdot
+structs, object collision for the pacdots, and keeping track of amount of pacdots player has.  Also another C file containing all the fences, their structs
+and regions associated with them.
+
+* Adding more songs would have helped the game greatly improve.
+
+* Improving the game over screen and making it so they could restart the game with button presses instead of having to reload the game
+or press the reset button on the msp430.  With the way that the program was done, this would be hard to implement because most information about inital
+position of objects is not saved (in order to optimize memory usage).
+
+* Adding more features, including lives, levels, and more maps.  Though hardware limitations would have made it very difficult.
+
 
 
 ##Credits
