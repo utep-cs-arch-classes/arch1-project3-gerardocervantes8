@@ -1,6 +1,15 @@
 
 
-const AbRect rect10 = {abRectGetBounds, abRectCheck, {6,6}}; /**< 10x10 rectangle */
+#ifndef pacman_included
+#define pacman_included
+
+#include "movingLayer.h"
+
+extern Layer enemyLayer1;
+extern Layer enemyLayer0;
+extern MovLayer movingEnemy1;
+extern MovLayer movingEnemy0;
+
 
 
 static short pacDotsGotten = 0;
@@ -14,23 +23,6 @@ static const AbRectOutline fieldOutline = {	/* playing field */
 static const AbRectOutline obstacleOutline = {	// playing field 
   abRectOutlineGetBounds, abRectOutlineCheck,   
   {15, 9} //obstacle (width), (height) //18 to 13
-};
-
-
-Layer enemyLayer1 = {		/**< Layer with an orange circle */
-  (AbShape *)&rect10,
-  {screenWidth/2-30, screenHeight/2 -55}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_RED,
-  0,
-};
-
-Layer enemyLayer0 = {		/**< Layer with an orange circle */
-  (AbShape *)&rect10,
-  {screenWidth-30, screenHeight/2 - 15}, /**< bit below & right of center */
-  {0,0}, {0,0},				    /* last & next pos */
-  COLOR_RED,
-  &enemyLayer1,
 };
 
 Layer pacDotsLayer5 = {		/**< Layer with an orange circle */
@@ -97,20 +89,7 @@ Layer pacmanLayer0 = {		/**< Layer with an orange circle */
 };
 
 
-/** Moving Layer
- *  Linked list of layer references
- *  Velocity represents one iteration of change (direction & magnitude)
- */
-typedef struct MovLayer_s {
-  Layer *layer;
-  Vec2 velocity;
-  struct MovLayer_s *next;
-} MovLayer;
-
-
-MovLayer ml8 = { &enemyLayer1, {5,0}, 0};
-MovLayer ml7 = { &enemyLayer0, {-5,0}, &ml8};
-MovLayer ml6 = { &pacDotsLayer5, {0,0}, &ml7}; //moving layer for pacman dot
+MovLayer ml6 = { &pacDotsLayer5, {0,0}, &movingEnemy0}; //moving layer for pacman dot
 MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layer for pacman dot
 MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layer for pacman dot
 MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layer for pacman dot
@@ -118,3 +97,4 @@ MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layer for pacman dot
 MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layer for pacman dot
 MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Pacman layer movement
 
+#endif

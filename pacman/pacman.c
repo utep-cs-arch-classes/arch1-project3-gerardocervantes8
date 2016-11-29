@@ -19,7 +19,7 @@
 #include "pacman.h"
 #include "buzzer.h"
 #include "sound.h"
-
+//#include "enemy.h"
 
 #define GREEN_LED BIT6
 #define RED_LED BIT0
@@ -31,67 +31,11 @@ Vec2 centerPos = {
 };
 
 
-/*Updates next pos to be new pos, and redraws the layer*/
-movLayerDraw(MovLayer *movLayers, Layer *layers)
-{
-  int row, col;
-  MovLayer *movLayer;
-
-  and_sr(~8);			/**< disable interrupts (GIE off) */
-
-  /**Each moving layer updates their pos to posNext*/
-  for (movLayer = movLayers; movLayer; movLayer = movLayer->next) { /* for each moving layer */
-    Layer *l = movLayer->layer;
-    l->posLast = l->pos;
-    l->pos = l->posNext;
-  }
-  or_sr(8);			/**< disable interrupts (GIE on) */
-
-
-  for (movLayer = movLayers; movLayer; movLayer = movLayer->next) { /* for each moving layer */
-    Region bounds;
-    layerGetBounds(movLayer->layer, &bounds); /**Gets bounds of layer*/
-    lcd_setArea(bounds.topLeft.axes[0], bounds.topLeft.axes[1], 
-		bounds.botRight.axes[0], bounds.botRight.axes[1]);
-    for (row = bounds.topLeft.axes[1]; row <= bounds.botRight.axes[1]; row++) {
-      for (col = bounds.topLeft.axes[0]; col <= bounds.botRight.axes[0]; col++) {
-	Vec2 pixelPos = {col, row};
-	u_int color = bgColor;
-	Layer *probeLayer;
-	for (probeLayer = layers; probeLayer; 
-	     probeLayer = probeLayer->next) { /* probe all layers, in order */
-	  if (abShapeCheck(probeLayer->abShape, &probeLayer->pos, &pixelPos)) {
-	    color = probeLayer->color;
-	    break; 
-	  } /* if probe check */
-	} // for checking all layers at col, row
-	lcd_writeColor(color); 
-      } // for col
-    } // for row
-  } // for moving layer being updated
-}	  
-
-/**Every moveLayer linked to the given movelayer, pos becomes posNext, used for movement*/
-void mlAdvance(MovLayer *ml)
-{
-  Vec2 newPos;
-  u_char axis;
-  Region shapeBoundary;
-  for (; ml; ml = ml->next) {
-    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);    
-    ml->layer->posNext = newPos;
-  } //< for ml 
-}
-
-
 /** Advances a moving shape within a fence
  *  
- *  \param ml The moving shape to be advanced
+ *  \param ml The moving shapes which will be check to see if they are touching the fence
  *  \param fence The region which will serve as a boundary for ml
  */
-/**If pixel is over the fence then changes direction of velocity*/
-/**Calculates newPos based on the velocity */
-
 /**If moving layer will be touching the region, turns the moving layer's velocity to 0*/
 void checkFences(MovLayer *ml, Region *fence)
 {
@@ -112,38 +56,6 @@ void checkFences(MovLayer *ml, Region *fence)
     } /**< for axis */
     
   } /**< for ml */
-}
-
-void enemyAI(MovLayer* enemyMovLayer){
-  static char enemyState = 0;
-  Vec2 enemySpeed =  enemyMovLayer->velocity;
-  int x, y;
-  if( enemySpeed.axes[0] == 0 && enemySpeed.axes[1] == 0){
-    switch(enemyState){
-    case 0: x = 5; y = -5; break; //Goes Bottom-right
-    case 1: x = 0; y = 6; break; //Goes up
-    case 2: x = -5; y = 0; break; //Goes left
-    case 3: x = 5; y = 0; break; //Goes right
-    case 4: x = -5; y = 4; break; //Goes goes top-left
-    case 5: x = 0; y = -4; break; //Goes Down 
-    case 6: x = 5; y = 0; break; //Goes right
-    case 7: x = 0; y = 6; break; //Goes up
-    case 8: x = -5; y = 0; break; //Goes left
-    case 9: x = -5; y = -4; break; //Goes goes bottom-left
-    case 10: x = 5; y = 0; break; //Goes right
-    case 11: x = 5; y = 7; break; //Goes top-right
-    case 12: x = -5; y = 0; break; //Goes left
-    case 13: x = 0; y = -4; break; //Goes Down 
-    case 14: x = 0; y = 6; enemyState = -1; break; //Goes up
-      
-    }
-    enemyMovLayer->velocity.axes[0] = x;
-    enemyMovLayer->velocity.axes[1] = y;
-    
-    enemyState++;
-    
-  }
-
 }
 
 int regionsIntersect(Region* reg1, Region* reg2){
@@ -197,7 +109,8 @@ static Region fieldFence;		/**< fence around playing field  */
 static Region obstacleFence0, obstacleFence1, obstacleFence2, obstacleFence3, obstacleFence4; 
 
 
-
+/**Writes the score of the game on top of the screen
+@PARAM pacDots is how many pacdots the player has collected*/
 void updatePacDotText(int pacDots){
   short width = screenWidth/3+20;
   short height = 3;
@@ -221,7 +134,10 @@ void updatePacDotText(int pacDots){
   drawString5x7(width, height, text, color, BGcolor);
 }
 
-
+/**Called when the game has ended, turns off cpu and interrupts and displays a message with the outcome
+@PARAM state, used to determine the outcome of the game.
+state == 1 implies player lost
+state == 2 implies player won*/
 void gameEnds(int state){
 
   if(state != 1 && state != 2){
@@ -242,14 +158,20 @@ void gameEnds(int state){
 }
 
 
-void objectCollisions(){
-  
+/**Finds what the center position of pacman is Vec2.  Stores result into centerPos structure*/
+void _pacmanCenterPos(){
   Region pacman;
   abShapeGetBounds((&pacmanLayer0)->abShape, &((&pacmanLayer0)->pos), &pacman);
   vec2Add((&centerPos), (&(pacman.topLeft)), (&(pacman.botRight)) );
   centerPos.axes[0] /= 2;
   centerPos.axes[1] /= 2; //Finds center of pacman TODO turn into a method/function
 
+}
+
+/**Handles all object collisions*/
+void objectCollisions(){
+  
+  _pacmanCenterPos();
   
   Region pacDotRegion;
   Layer* pacDotLayer;
@@ -280,8 +202,13 @@ void objectCollisions(){
       sound_start(2);
     }
   }
+  
+}
 
+void enemyCollision(){
 
+  _pacmanCenterPos();
+  
   Region enemyRegion;
   Layer* enemyLayer;
   int enemy;
@@ -296,7 +223,8 @@ void objectCollisions(){
       gameEnds(1);
     }
   }
-  
+ 
+
 }
 
 /**Finds if center of a region1 is inside region2, if so returns true*/
@@ -431,9 +359,10 @@ void wdt_c_handler()
     checkFencesOutside(&ml0, &obstacleFence4);
     mlAdvance(&ml0);
     objectCollisions();
+    enemyCollision();
     sound_update(0);
-    enemyAI((&ml7));
-    enemyAI((&ml8));
+    enemyAI(1);
+    enemyAI(2);
     if(pacDotsGotten == 6){ /**Player won!*/
       gameEnds(2);
     }

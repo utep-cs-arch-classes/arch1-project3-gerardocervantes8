@@ -1,10 +1,29 @@
 
 
+#include <shape.h>
+#include "enemy.h"
 
-void enemyAI(MovLayer* enemyMovLayer){
+
+void enemyDraw(){
+   layerInit(&enemyLayer0);
+   layerDraw(&enemyLayer0);
+}
+
+void enemyAI(int i){
+
+  MovLayer* enemyMovLayer;
+  
+  switch(i){
+  case 1: enemyMovLayer = &movingEnemy0; break; 
+  case 2: enemyMovLayer = &movingEnemy1; break;
+  default: return;
+  }
+  
   static char enemyState = 0;
   Vec2 enemySpeed =  enemyMovLayer->velocity;
   int x, y;
+    
+  
   if( enemySpeed.axes[0] == 0 && enemySpeed.axes[1] == 0){
     switch(enemyState){
     case 0: x = 5; y = -5; break; //Goes Bottom-right
