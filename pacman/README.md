@@ -37,6 +37,7 @@ To control pacman you will need to use the 4 buttons on the msp430 extension boa
 To win:  You must collect all the pacdots (6 of them) in the game.
 How can you lose?: You will lose if you touch an enemy, you can tell who an enemy is by their red color.
 Enemies are always red.
+The enemies in this game are the red sliding disks
 
 Enemies will be able to move, so watch out.
 
@@ -46,6 +47,7 @@ Fences are always blue.
 ##Game Input
 
 4 buttons
+
 * Button 1:  Up button
 * Button 2:  Down button
 * Button 3:  Left button
@@ -97,11 +99,12 @@ be added to flash memory instead.  With flash memory there was no struggle with 
 Paying attention to all the global variables declared and rethinking whether they should be char, short, or long was done for this optimization.
 
 
-##Enemies AI
+##Artifical Intelligence for Enemies
 
-The enemy AI in this game does not use randomness.  So the enemies follow a set pattern/states.  Due to the AI not being smart,
-to pose a challenge to the player, the AI was made faster than the player.  There are 2 enemies in the game.  Knowing where they will be is difficult
-despite them not being random.  This is because they have many states, and their states change whenever they hit a wall.
+The enemy AI in this game does not use randomness.  So the enemies follow a set pattern/states.  The enemies were made faster than the player because the AI was not smart enough to get the player.  There are 2 enemies in the game.  Knowing where they will be is difficult despite them not being random.  This is because they have many states, and their states change whenever they hit a wall.
+
+
+Whenever any moving objects hits a wall, their velocity turns to 0.  The artifical intelligence in this game checks whenever the velocity of the enemies is 0, if it is, then it updates their velocity to a new velocity.  The enemies can go in all 8 directions.  Up, down, left, right, down-left, down-right, up-left, up-right.  The next state they go to determines what direction.  I decided what direction each state will have arbitrarily.
 
 
 ##Things to Improve on
@@ -174,3 +177,5 @@ Author: Gerardo Cervantes
 
 
 ##Bugs
+
+There is glitch where if you press 2 buttons simultaneously, then the pacman can go through fences and appear outside the fences.  Example:  If you want on the top-right corner of the outer fence, then if you press buttons 1 and 4 simultaneously multiple times, then the pacman will go out of the outer fence.  This glitch can make it so you can go anywhere in the map.
