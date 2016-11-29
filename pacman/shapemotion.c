@@ -71,19 +71,14 @@ movLayerDraw(MovLayer *movLayers, Layer *layers)
   } // for moving layer being updated
 }	  
 
-
-
-//Region fence = {{10,30}, {SHORT_EDGE_PIXELS-10, LONG_EDGE_PIXELS-10}}; /**< Create a fence region */
-
-
+/**Every moveLayer linked to the given movelayer, pos becomes posNext, used for movement*/
 void mlAdvance(MovLayer *ml)
 {
   Vec2 newPos;
   u_char axis;
   Region shapeBoundary;
   for (; ml; ml = ml->next) {
-    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
-    
+    vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);    
     ml->layer->posNext = newPos;
   } //< for ml 
 }
@@ -117,6 +112,38 @@ void checkFences(MovLayer *ml, Region *fence)
     } /**< for axis */
     
   } /**< for ml */
+}
+
+void enemyAI(MovLayer* enemyMovLayer){
+  static char enemyState = 0;
+  Vec2 enemySpeed =  enemyMovLayer->velocity;
+  int x, y;
+  if( enemySpeed.axes[0] == 0 && enemySpeed.axes[1] == 0){
+    switch(enemyState){
+    case 0: x = 5; y = -5; break; //Goes Bottom-right
+    case 1: x = 0; y = 6; break; //Goes up
+    case 2: x = -5; y = 0; break; //Goes left
+    case 3: x = 5; y = 0; break; //Goes right
+    case 4: x = -5; y = 4; break; //Goes goes top-left
+    case 5: x = 0; y = -4; break; //Goes Down 
+    case 6: x = 5; y = 0; break; //Goes right
+    case 7: x = 0; y = 6; break; //Goes up
+    case 8: x = -5; y = 0; break; //Goes left
+    case 9: x = -5; y = -4; break; //Goes goes bottom-left
+    case 10: x = 5; y = 0; break; //Goes right
+    case 11: x = 5; y = 7; break; //Goes top-right
+    case 12: x = -5; y = 0; break; //Goes left
+    case 13: x = 0; y = -4; break; //Goes Down 
+    case 14: x = 0; y = 6; enemyState = -1; break; //Goes up
+      
+    }
+    enemyMovLayer->velocity.axes[0] = x;
+    enemyMovLayer->velocity.axes[1] = y;
+    
+    enemyState++;
+    
+  }
+
 }
 
 int regionsIntersect(Region* reg1, Region* reg2){
@@ -195,6 +222,26 @@ void updatePacDotText(int pacDots){
 }
 
 
+void gameEnds(int state){
+
+  if(state != 1 && state != 2){
+    return;
+  }
+  clearScreen(COLOR_GREEN);
+  sound_stop();
+  if(state == 1){
+    drawString5x7((screenWidth/2) -5, screenHeight/2, "YOU LOSE", COLOR_GREEN, COLOR_RED);
+  }
+  else{
+    drawString5x7((screenWidth/2) -5, screenHeight/2, "YOU WON", COLOR_GREEN, COLOR_RED);
+  }
+  
+  
+  or_sr(0x10); //CPU OFF
+  and_sr(~8); //Interrupts off
+}
+
+
 void objectCollisions(){
   
   Region pacman;
@@ -233,8 +280,25 @@ void objectCollisions(){
       sound_start(2);
     }
   }
+
+
+  Region enemyRegion;
+  Layer* enemyLayer;
+  int enemy;
+  for(enemy = 0; enemy < 2; enemy++){
+    switch(enemy){
+    case 0: enemyLayer = &enemyLayer0; break;
+    case 1: enemyLayer = &enemyLayer1; break;
+    }
+    abShapeGetBounds(enemyLayer->abShape, &(enemyLayer->pos), &enemyRegion);
+  
+    if( regionsIntersectOptimized(&centerPos, &enemyRegion) ){
+      gameEnds(1);
+    }
+  }
   
 }
+
 /**Finds if center of a region1 is inside region2, if so returns true*/
 int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
   
@@ -250,30 +314,30 @@ int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
 
 void drawAllLayers(){
 
-Layer obstacleLayer4 = {		// playing field as a layer 
+Layer obstacleLayer4 = {		//top-right 
   (AbShape *) &obstacleOutline,
-  {((screenWidth/4)*3)-3, ((screenHeight/4))+6},//< center 
+  {((screenWidth/4)*3)-7, ((screenHeight/4))+6},//< center 
   {0,0}, {0,0},				    // last & next pos 
   COLOR_BLUE,
   &pacmanLayer0 
 };
-Layer obstacleLayer3 = {		// playing field as a layer 
+ Layer obstacleLayer3 = {                 //bottom-left
   (AbShape *) &obstacleOutline,
-  {((screenWidth/4))+3, ((screenHeight/4)*3)+6},//< center 
+  {((screenWidth/4)+3), ((screenHeight/4)*3)+6},//< center 
   {0,0}, {0,0},				    // last & next pos 
   COLOR_BLUE,
   &obstacleLayer4
 };
 
 
-Layer obstacleLayer2 = {		// playing field as a layer 
+ Layer obstacleLayer2 = {		//center
   (AbShape *) &obstacleOutline,
   {(screenWidth/2)-1, (screenHeight/2)+6},//< center 
   {0,0}, {0,0},				    // last & next pos 
   COLOR_BLUE,
   &obstacleLayer3
 };
-Layer obstacleLayer1 = {		// playing field as a layer 
+Layer obstacleLayer1 = {		// bottom-right
   (AbShape *) &obstacleOutline,
   {((screenWidth/4)*3)-3, ((screenHeight/4)*3)+6},//< center 
   {0,0}, {0,0},				    // last & next pos 
@@ -281,9 +345,9 @@ Layer obstacleLayer1 = {		// playing field as a layer
   &obstacleLayer2
 };
 
-Layer obstacleLayer0 = {		 //playing field as a layer 
+Layer obstacleLayer0 = {		 //top-left
   (AbShape *) &obstacleOutline,
-  {screenWidth/4+3, (screenHeight/4)+6},//< center 
+  {screenWidth/4, (screenHeight/4)+6},//< center 
   {0,0}, {0,0},				    // last & next pos 
   COLOR_BLUE,
   &obstacleLayer1 
@@ -296,9 +360,7 @@ Layer obstacleLayer0 = {		 //playing field as a layer
  layerGetBounds(&obstacleLayer1, &obstacleFence1);
  layerGetBounds(&obstacleLayer2, &obstacleFence2);
  layerGetBounds(&obstacleLayer3, &obstacleFence3);
- layerGetBounds(&obstacleLayer4, &obstacleFence4);
- 
- 
+ layerGetBounds(&obstacleLayer4, &obstacleFence4); 
 }
 
 /** Initializes everything, enables interrupts and green LED, 
@@ -315,7 +377,7 @@ void main()
 
   buzzer_init();
   shapeInit();
-  
+
   //layerInit(&pacmanLayer0);
   //layerDraw(&pacmanLayer0);
   
@@ -330,7 +392,7 @@ void main()
   p2sw_init( SWITCHES );
 
   
-  drawString5x7(7,4, "PACMAN", COLOR_GREEN, COLOR_RED);
+  drawString5x7( 7, 4, "PACMAN", COLOR_GREEN, COLOR_RED);
 
   updatePacDotText(pacDotsGotten);
     
@@ -349,7 +411,7 @@ void main()
     redrawScreen = 0;
 
     movLayerDraw(&ml0, &pacmanLayer0);
-  
+    
   }
 }
 
@@ -370,6 +432,11 @@ void wdt_c_handler()
     mlAdvance(&ml0);
     objectCollisions();
     sound_update(0);
+    enemyAI((&ml7));
+    enemyAI((&ml8));
+    if(pacDotsGotten == 6){ /**Player won!*/
+      gameEnds(2);
+    }
     if (p2sw_read())
       redrawScreen = 1;
     count = 0;
