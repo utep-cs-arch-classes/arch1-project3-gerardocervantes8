@@ -167,21 +167,22 @@ position of objects is not saved (in order to optimize memory usage).
 
 * Adding more features, including lives, levels, and more maps.  Though hardware limitations would have made it very difficult.
 
-<<<<<<< HEAD
 * Changing the shape of the main character, when I attempted it more bugs appeared, I believe the bugs came from hardware limitations/needed more optimizations.  But the shape did change, despite other bugs that appeared.
 
 The way I implemented pacman shape:
 When checking for if a pixel was in the shape, and if statement was added.
 
 ~~~
+/**Creating pacman shape*/
 if(pixel.x < pixel.y && pixel.x > 0 ){
-	   return 0; //Then pixel shouldn't be in shape  (this removes the mouth)
+	   return 0; //Then pixel shouldn't be in shape
 }
 
 ~~~
 
 Then the reset of the code would follow.  The pixel has to be adjusted to the center before the 'if' statement by finding
-distance from center to pixel (pixel - centerPos)
+distance from center to pixel (pixel - centerPos).  This creates the pacman shape because all of the locations where the X axis is less than the Y axis
+will divide the circle into 4 diagonal parts, 2 of which will be the left and the right parts.  Since we only want the right part of the circle, we can do pixel.x > 0 to ensure we only get the right quarter of the circle.
 
 
 ##Credits
