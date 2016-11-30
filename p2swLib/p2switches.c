@@ -2,7 +2,7 @@
 #include <msp430.h>
 #include "p2switches.h"
 
-static unsigned char switch_mask;
+static unsigned char switch_mask; /*PREVIOUSLY WERE ALL UNSIGNED CHAR*/
 static unsigned char switches_last_reported;
 static unsigned char switches_current;
 
@@ -13,7 +13,7 @@ switch_update_interrupt_sense()
   //* update switch interrupt to detect changes from current buttons 
   P2IES |= (switches_current);  // if switch up, sense down 
   P2IES &= (switches_current | ~switch_mask); // if switch down, sense up 
-}
+  }
 
 void 
 p2sw_init(unsigned char mask)
@@ -23,7 +23,6 @@ p2sw_init(unsigned char mask)
   P2IE = mask;      /* enable interrupts from switches */  //P2IE |= mask
   P2OUT |= mask;    /* pull-ups for switches */
   P2DIR &= ~mask;   /* set switches' bits for input */
-  P2IES |= mask;    
 
   switch_update_interrupt_sense();
 }

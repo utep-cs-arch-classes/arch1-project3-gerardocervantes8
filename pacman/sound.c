@@ -21,15 +21,21 @@ static char isPlayingSound = 0;
 //static int loseSound[5] = {400,500,600,715,795};
 
 /**400 and 500 pitch*/
-static char loseSound[2] = {4,5};
+//static char loseSound[2] = {4,5};
 
 
 /**Given the winStreak, updates the sound to check if need to change the buzzer based on hte song playing
 @Parameter winstreak is used to be able to play the win sound based on the current winStreak*/
 void sound_update(int winStreak){
   switch(isPlayingSound){
-    // case 1: sound_win_play(winStreak); break;
-  case 2: sound_play_song(); break;
+  case 1: break; //sound_win_play(winStreak); 
+  case 2: break; //sound_play_song();
+  case 3: sound_pacDot(); break;
+  case 4: sound_pacDot(); break;
+  case 5: sound_pacDot(); break;
+  case 6: sound_pacDot(); break;
+  case 7: sound_pacDot(); break;
+   
   }
 }
 
@@ -56,21 +62,44 @@ void sound_start(int typeOfSound){
   }
 }
 
+/**Creates sound for when pacdot is collected*/
+void sound_pacDot(){
+  if(isPlayingSound == 3 || isPlayingSound == 4){
+    buzzer_set_period(400);
+    isPlayingSound++;
+  }
+  else if(isPlayingSound == 5 || isPlayingSound == 6){
+    buzzer_set_period(500);
+    isPlayingSound++;
+  }
+  else{
+    sound_stop();
+  }
+  
+}
+
+/**Stops song that is playing*/
+void sound_stop(){
+  isPlayingSound = 0;
+  buzzer_stop();
+}
+
+
 /**Sound starts playing lose song*/
-void sound_play_song(){
+/*void sound_play_song(){
   static char soundCounter = 0;
   static char note = 0;
   int soundToPlay = loseSound[note] * 100;
   buzzer_set_period(soundToPlay);
 
-  /**Length that each note will play to*/
+  //Length that each note will play to
   if(soundCounter > 2){
-    /**Has finished playing all notes of the sound effect*/
+    //Has finished playing all notes of the sound effect
     if(note >= (sizeof(loseSound)-1) ){
       sound_stop();
       note = 0;
     }
-    /**Increment to the next note of the song*/
+    //Increment to the next note of the song
     else{
       note++;
       soundCounter = 0;
@@ -80,12 +109,7 @@ void sound_play_song(){
     soundCounter++;
   }
 }
-
-/**Stops song that is playing*/
-void sound_stop(){
-  isPlayingSound = 0;
-  buzzer_stop();
-}
+*/
 
 /**Returns the pitch that win sound should be
 @Parameter winStreak used to change pitch of sound*/

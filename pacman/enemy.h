@@ -10,6 +10,7 @@
 /**Shape that the enemies will be*/
 const AbRect rect10 = {abRectGetBounds, abRectCheck, {6,6}}; /**< 6x6 rectangle */
 
+
 Layer enemyLayer1 = {	  //Layer with second enemy
   (AbShape *)&rect10,
   {screenWidth/2-30, screenHeight/2 -55}, /**< bit below & right of center */

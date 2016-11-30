@@ -10,10 +10,10 @@ CFLAGS          	= -mmcu=${CPU} -Os -I../h -I../h
 CC              = msp430-elf-gcc
 AS              = msp430-elf-gcc -mmcu=${CPU} -c
 
-all:shapemotion.elf
+all:pacman.elf
 
 #additional rules for files
-shapemotion.elf: ${COMMON_OBJECTS} pacman.o wdt_handler.o buzzer.o sound.o movingLayer.o enemy.o 
+pacman.elf: ${COMMON_OBJECTS} pacman.o wdt_handler.o buzzer.o sound.o movingLayer.o enemy.o 
 	${CC} -mmcu=${CPU}   -o $@ $^ -L../lib -lTimer -lLcd -lShape -lCircle -lp2sw
 
 pacman.o: pacman.h movingLayer.h
@@ -26,7 +26,7 @@ sound.o: #sound.h
 
 movingLayer.o: #movingLayer.h
 
-load: shapemotion.elf
+load: pacman.elf
 	mspdebug rf2500 "prog $^"
 
 clean:

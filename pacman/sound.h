@@ -20,3 +20,5 @@ void sound_update(int winStreak);
 /**Plays the winning sound_stop
 Sound that is played is determined by the winStreak*/
 void sound_win_play(int winStreak);
+
+void sound_pacDot();

@@ -23,6 +23,7 @@ static const AbRectOutline obstacleOutline = {	// fences inside outer border
 };
 
 
+
 Layer pacDotsLayer5 = {		//< Layer with pacdot, top-right
   (AbShape *)&circle2,
   {screenWidth-20, 27}, 
@@ -87,12 +88,56 @@ Layer pacmanLayer0 = {		//Layer with pacman (character you control)
 };
 
 
+
 MovLayer ml6 = { &pacDotsLayer5, {0,0}, &movingEnemy0}; //moving layer for pacdot
 MovLayer ml5 = { &pacDotsLayer4, {0,0}, &ml6}; //moving layer for pacdot
 MovLayer ml4 = { &pacDotsLayer3, {0,0}, &ml5}; //moving layer for pacdot
 MovLayer ml3 = { &pacDotsLayer2, {0,0}, &ml4}; //moving layer for pacdot
 MovLayer ml2 = { &pacDotsLayer1, {0,0}, &ml3}; //moving layer for pacdot
 MovLayer ml1 = { &pacDotsLayer0, {0,0}, &ml2}; //moving layer for pacdot
-MovLayer ml0 = { &pacmanLayer0, {0,0},&ml1}; //Moving layer with Pacman
+MovLayer ml0 = { &pacmanLayer0, {0,0}, &ml1}; //Moving layer with Pacman
 
 #endif
+
+/**Used to create pacman, work in progress*/
+/*
+const unsigned char chordVecs5[6] = {
+    5, // dist along axis = 0
+    5, // dist along axis = 1
+    5, // dist along axis = 2
+    4, // dist along axis = 3
+    3, // dist along axis = 4
+    0, // dist along axis = 5
+};
+
+// true if pixel is in circle centered at centerPos
+int abCircleChecked(const AbCircle *circle, const Vec2 *centerPos, const Vec2 *pixel)
+{
+  u_char radius = circle->radius;
+  int axis;
+  Vec2 relPos;
+  vec2Sub(&relPos, pixel, centerPos); // vector from center to pixel
+
+  int x = relPos.axes[0];
+  int y = relPos.axes[1];
+  if( (x > y) && (x > 0 )  ){
+    return 0; 
+  }
+  vec2Abs(&relPos);		       project to first quadrant 
+
+  return (relPos.axes[0] <= radius && circle->chords[relPos.axes[0]] >= relPos.axes[1]);
+}
+
+void
+abCircleGetBoundsO(const AbCircle *circle, const Vec2 *centerPos, Region *bounds)
+{
+  u_char axis, radius = circle->radius;
+  for (axis = 0; axis < 2; axis ++) {
+    bounds->topLeft.axes[axis] = centerPos->axes[axis] - radius;
+    bounds->botRight.axes[axis] = centerPos->axes[axis] + radius;
+  }
+  regionClipScreen(bounds);
+}
+
+const AbCircle pacman5 = {  abCircleGetBoundsO, abCircleChecked, chordVecs5, 5};*/
+

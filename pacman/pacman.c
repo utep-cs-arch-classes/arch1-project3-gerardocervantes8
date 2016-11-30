@@ -52,19 +52,29 @@ void checkFences(MovLayer *ml, Region *fence)
   } /**< for ml */
 }
 
-int regionsIntersect(Region* reg1, Region* reg2){
-  vec2Add((&centerPos), (&(reg1->topLeft)), (&(reg1->botRight)) );
 
-  centerPos.axes[0] /= 2;  
-  centerPos.axes[1] /= 2;/**Finds center of region 1*/
-
-  if(centerPos.axes[0] >= (reg2->topLeft.axes[0]-6) && centerPos.axes[0] <= (reg2->botRight.axes[0]+6)){ /**Left of region, right of region*/
-
-    if(centerPos.axes[1] <= (reg2->botRight.axes[1]+7) && centerPos.axes[1] >= (reg2->topLeft.axes[1]-6)){ /**bottom of region, top of region*/
+/**Finds if center of a region1 is inside region2, if so returns true*/
+int isPlaceInRegion(Vec2* reg1, Region* reg2){
+  
+  //If X-axis is in region2
+  if (centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
+    //If Y-axis is in region2
+    if(centerPos.axes[1] <= reg2->botRight.axes[1] && centerPos.axes[1] >= reg2->topLeft.axes[1] ){
       return 1;
     }
   }
   return 0;
+}
+
+/**Finds if center of region 1 is inside of region2
+@Returns 1 if center of reg1 is in region 2, otherwise returns 0*/
+int regionsIntersect(Region* reg1, Region* reg2){
+  
+  vec2Add((&centerPos), (&(reg1->topLeft)), (&(reg1->botRight)) );
+  centerPos.axes[0] /= 2;  
+  centerPos.axes[1] /= 2;/**Finds center of region 1*/
+  
+  return isPlaceInRegion(&centerPos, reg2);
 }
 
 /** Advances a moving shape within a fence
@@ -100,16 +110,16 @@ u_int bgColor = COLOR_BLACK;     /**< The background color */
 int redrawScreen = 1;           /**< Boolean for whether screen needs to be redrawn */
 
 static Region fieldFence;		/**< fence around playing field  */
+
+//Obstacle fences initalized in drawAllLayers();
 static Region obstacleFence0, obstacleFence1, obstacleFence2, obstacleFence3, obstacleFence4; 
 
 
 /**Writes the score of the game on top of the screen
 @PARAM pacDots is how many pacdots the player has collected*/
-void updatePacDotText(int pacDots){
+void updatePacDotText(const int pacDots){
   short width = screenWidth/3+20;
   short height = 3;
-  /*int color = COLOR_GREEN;
-    int BGcolor = COLOR_RED;*/
   int color = COLOR_RED;
   int BGcolor = COLOR_GREEN;
   
@@ -132,7 +142,7 @@ void updatePacDotText(int pacDots){
 @PARAM state, used to determine the outcome of the game.
 state == 1 implies player lost
 state == 2 implies player won*/
-void gameEnds(int state){
+void gameEnds(const int state){
 
   if(state != 1 && state != 2){
     return;
@@ -188,7 +198,7 @@ void objectCollisions(){
     
     abShapeGetBounds(pacDotLayer->abShape, &(pacDotLayer->pos), &pacDotRegion);
     
-    if(regionsIntersectOptimized(&centerPos, &pacDotRegion)){
+    if(isPlaceInRegion(&centerPos, &pacDotRegion)){
       pacDotLayer->posNext.axes[0] = newX;
       pacDotLayer->posNext.axes[1] = newY;
       pacDotLayer->pos.axes[0] = newX;
@@ -196,9 +206,14 @@ void objectCollisions(){
       
       pacDotsGotten++;
       updatePacDotText(pacDotsGotten);
-      sound_start(2);
+      sound_start(3);
     }
   }
+
+  if(pacDotsGotten == 6){ /**Player won!*/
+    gameEnds(2);
+  }
+  
   
 }
 
@@ -218,25 +233,23 @@ void enemyCollision(){
     }
     abShapeGetBounds(enemyLayer->abShape, &(enemyLayer->pos), &enemyRegion);
   
-    if( regionsIntersectOptimized(&centerPos, &enemyRegion) ){
+    if( isPlaceInRegion(&centerPos, &enemyRegion) ){
       gameEnds(1);
     }
   }
  
-
 }
 
-/**Finds if center of a region1 is inside region2, if so returns true*/
-int regionsIntersectOptimized(Vec2* reg1, Region* reg2){
+/**Increases the region by given amount of pixels in all directions
+@param region you want to increase size of
+@param pixels is the amount of pixels you want to increase region by*/
+void increaseRegion(Region* region, const int pixels){
   
-  //If X-axis is between region2
-  if (centerPos.axes[0] >= reg2->topLeft.axes[0] && centerPos.axes[0] <= reg2->botRight.axes[0]){
-    //If Y-axis is between region2
-    if(centerPos.axes[1] <= reg2->botRight.axes[1] && centerPos.axes[1] >= reg2->topLeft.axes[1] ){
-      return 1;
-    }
-  }
-  return 0;
+  region->topLeft.axes[0] = region->topLeft.axes[0] - pixels;
+  region->topLeft.axes[1] = region->topLeft.axes[1] - pixels;
+  region->botRight.axes[0] = region->botRight.axes[0] + pixels;
+  region->botRight.axes[1] = region->botRight.axes[1] + pixels;
+  
 }
 
 /**Contains structures of obstacle fences, obstacle fences are only drawn once, which is why they are drawn
@@ -297,6 +310,12 @@ void drawAllLayers(){
   layerGetBounds(&obstacleLayer3, &obstacleFence3);
   layerGetBounds(&obstacleLayer4, &obstacleFence4); 
 
+  increaseRegion(&obstacleFence0, 6);
+  increaseRegion(&obstacleFence1, 6);
+  increaseRegion(&obstacleFence2, 6);
+  increaseRegion(&obstacleFence3, 6);
+  increaseRegion(&obstacleFence4, 6);
+  
 }
 
 /** Initializes everything, enables interrupts and green LED, 
@@ -360,9 +379,7 @@ void wdt_c_handler()
     sound_update(0); //Updates sound
     enemyAI(1); //Updates AI's velocity if their velocity is 0 from touching a wall
     enemyAI(2);
-    if(pacDotsGotten == 6){ /**Player won!*/
-      gameEnds(2);
-    }
+    
     if (p2sw_read())
       redrawScreen = 1;
     count = 0;
@@ -398,6 +415,8 @@ void updatePacmanMovement(){
   vec2Add(&newPos, &(pacmanLayer->posNext), &(pacmanML->velocity));
   
   int direction = 0;
+
+  /**Determines what direction pacman will go to*/
   switch( (P2IFG & (SWITCHES) ) ){
 
   case BIT0: direction = 1; break; //Button 1 pressed (sw2)
