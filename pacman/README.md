@@ -88,8 +88,6 @@ The program first starts by initalizing everything it will need to use.  The pro
 In the case of pacman, during an interrupt.  The game checks for collisions between fences, pacdots and other objects.  
 
 
-* Buttons:
-
 ##Optimizations
 
 There were optimizations that were done to the program.  Most of the optimizations were done to reduce
@@ -105,7 +103,7 @@ when trying to use more.
 
 ##Artifical Intelligence for Enemies
 
-The enemy AI in this game does not use randomness.  So the enemies follow a set pattern/states.  The enemies were made faster than the player because the AI was not smart enough to get the player.  There are 2 enemies in the game.  Knowing where they will be is difficult despite them not being random.  This is because they have many states, and their states change whenever they hit a wall.
+The enemy AI in this game does not use randomness.  The enemies follow a set pattern/states.  The enemies move faster than the player to provide more of a challenge.  There are 2 enemies in the game.  Knowing where they will be is difficult despite them not being random.  Random was not provided because importing a random 'class' took too much resources from the msp430.  The AI has several states, each state is depicted by what direction it is moving.  Whenever the AI hits a wall, the state progresses to the next one.  So a state transition happens when a wall is hit.  The order that the AI goes through the states is sequential, so when the AI is in state 3 then it will always move to state 4. 
 
 
 Whenever any moving objects hits a wall, their velocity turns to 0.  The artifical intelligence in this game checks whenever the velocity of the enemies is 0, if it is, then it updates their velocity to a new velocity.  The enemies can go in all 8 directions.  Up, down, left, right, down-left, down-right, up-left, up-right.  The next state they go to determines what direction.  I decided what direction each state will have seemingly arbitrarily.
